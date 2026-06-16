@@ -1,76 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Live Scrolling Dashboard</title>
+  <title>LED Dashboard</title>
 
   <style>
     body {
       margin: 0;
       font-family: Arial;
-      transition: 0.3s;
+      background: black;
+      color: #39ff14;
+      overflow: hidden;
     }
 
-    body.dark { background:#0f172a; color:white; }
-    body.light { background:#f1f5f9; color:black; }
-    body.neon { background:black; color:#39ff14; }
-
     header {
+      padding: 10px;
+      background: #111;
+      color: white;
       display:flex;
       justify-content:space-between;
-      padding:10px;
-      background:#111827;
-      color:white;
     }
 
     .controls {
-      padding:10px;
+      padding: 10px;
     }
 
     input {
-      padding:6px;
-      width:220px;
+      padding: 8px;
+      width: 250px;
+      font-size: 18px;
     }
 
     .ticker {
       height: calc(100vh - 120px);
-      overflow-y: auto;   /* ✅ scroll enabled */
+      overflow-y: auto;
       padding: 10px;
     }
 
     .feed {
-      display:flex;
-      flex-direction:column;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
 
     .item {
-      padding:12px;
-      margin:5px 0;
-      border-radius:8px;
-      background:#1e293b;
-      border-left:4px solid #38bdf8;
+      font-size: 74px;   /* 🔥 LED SIZE */
+      line-height: 1.1;
+      padding: 10px;
+      border-bottom: 2px solid #39ff14;
+      text-shadow: 0 0 10px #39ff14;
     }
 
-    .new {
-      border-left:4px solid #22c55e;
-      box-shadow:0 0 10px #22c55e;
+    .small {
+      font-size: 30px;
+      opacity: 0.8;
     }
   </style>
 </head>
 
-<body class="dark">
+<body>
 
 <header>
-  <div>📡 Live Dashboard</div>
-
-  <div>
-    <button onclick="setTheme('dark')">Dark</button>
-    <button onclick="setTheme('light')">Light</button>
-    <button onclick="setTheme('neon')">Neon</button>
-  </div>
+  <div>📺 LED DISPLAY</div>
 </header>
 
 <div class="controls">
-  🔎 <input id="search" placeholder="Search..." onkeyup="render()" />
+  <input id="search" placeholder="Search..." onkeyup="render()" />
 </div>
 
 <div class="ticker">
@@ -82,29 +76,17 @@
 const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
 
 let rows = [];
-let lastData = "";
-
-function setTheme(t) {
-  document.body.className = t;
-}
 
 async function fetchData() {
   try {
     const res = await fetch(API + "?t=" + Date.now());
     const json = await res.json();
 
-    const newData = JSON.stringify(json.rows || []);
-
-    // ✅ prevent unnecessary re-render
-    if (newData === lastData) return;
-
-    lastData = newData;
     rows = json.rows || [];
-
     render();
 
-  } catch (err) {
-    console.error("API ERROR:", err);
+  } catch (e) {
+    console.error(e);
   }
 }
 
@@ -113,32 +95,28 @@ function render() {
   const q = document.getElementById("search").value.toLowerCase();
   const feed = document.getElementById("feed");
 
-  if (!rows.length) {
-    feed.innerHTML = "<div class='item'>No Data Found</div>";
-    return;
-  }
-
   let filtered = rows.filter(r =>
     (r || []).join(" ").toLowerCase().includes(q)
   );
 
   feed.innerHTML = "";
 
-  filtered.forEach((r, i) => {
+  filtered.forEach(r => {
+
+    const id = r[0] || "";
+    const name = r[1] || "";
+    const cls = r[2] || "";
+    const status = r[3] || "";
+    const time = r[4] || "";
 
     const div = document.createElement("div");
     div.className = "item";
 
-    if (i === 0) div.classList.add("new");
-
     div.innerHTML = `
-      <b>${r[1] || "No Name"}</b><br>
-      <small>
-        ID: ${r[0] || ""} |
-        Col3: ${r[2] || ""} |
-        Col4: ${r[3] || ""} |
-        Time: ${r[4] || ""}
-      </small>
+      ${name}<br>
+      <div class="small">
+        ${cls} | ${status} | ${time}
+      </div>
     `;
 
     feed.appendChild(div);
@@ -146,7 +124,7 @@ function render() {
 }
 
 fetchData();
-setInterval(fetchData, 8000); // ✅ reduced spam refresh
+setInterval(fetchData, 5000);
 
 </script>
 
