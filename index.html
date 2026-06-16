@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Live Scrolling Dashboard</title>
+  <title>Live Dashboard</title>
 
   <style>
     body {
@@ -21,9 +21,6 @@
       padding:10px;
       background:#111827;
       color:white;
-      position:sticky;
-      top:0;
-      z-index:10;
     }
 
     .controls {
@@ -32,36 +29,30 @@
 
     input {
       padding:6px;
-      width:200px;
+      width:220px;
     }
 
     .ticker {
       height: calc(100vh - 120px);
       overflow: hidden;
-      position: relative;
     }
 
     .feed {
-      display: flex;
-      flex-direction: column;
+      display:flex;
+      flex-direction:column;
     }
 
     .item {
-      padding: 12px;
-      margin: 5px;
-      border-radius: 8px;
-      background: #1e293b;
-      border-left: 4px solid #38bdf8;
+      padding:12px;
+      margin:5px;
+      border-radius:8px;
+      background:#1e293b;
+      border-left:4px solid #38bdf8;
     }
 
     .new {
-      border-left: 4px solid #22c55e !important;
-      box-shadow: 0 0 10px #22c55e;
-    }
-
-    @keyframes scrollUp {
-      0% { transform: translateY(0); }
-      100% { transform: translateY(-50%); }
+      border-left:4px solid #22c55e;
+      box-shadow:0 0 10px #22c55e;
     }
   </style>
 </head>
@@ -69,7 +60,7 @@
 <body class="dark">
 
 <header>
-  <div>📡 Live Scrolling Dashboard</div>
+  <div>📡 Live Dashboard</div>
 
   <div>
     <button onclick="setTheme('dark')">Dark</button>
@@ -86,18 +77,14 @@
   <div class="feed" id="feed"></div>
 </div>
 
-<audio id="beep">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
-
 <script>
 
-const API = "https://script.google.com/a/macros/podar.org/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
+const API = "https://script.google.com/macros/s/YOUR_DEPLOYMENT_ID/exec";
 
 let rows = [];
 let lastTop = "";
 
-function setTheme(t){
+function setTheme(t) {
   document.body.className = t;
 }
 
@@ -110,21 +97,12 @@ async function fetchData() {
 
     rows = json.rows || [];
 
-    // remove empty rows
-    rows = rows.filter(r => r && r.some(cell => cell !== ""));
-
-    const latest = JSON.stringify(rows[0] || []);
-
-    if (lastTop && latest !== lastTop) {
-      document.getElementById("beep").play();
-    }
-
-    lastTop = latest;
-
     render();
 
   } catch (err) {
-    console.error("Fetch Error:", err);
+    console.error("FETCH ERROR:", err);
+    document.getElementById("feed").innerHTML =
+      "<div class='item'>API ERROR - Check Console</div>";
   }
 }
 
@@ -149,31 +127,11 @@ function render() {
     const div = document.createElement("div");
     div.className = "item";
 
-    const id = r[0] || "";
-    const name = r[1] || "No Name";
-
     if (i === 0) div.classList.add("new");
 
     div.innerHTML = `
-      <b>${name}</b><br>
-      <small>${id}</small>
-    `;
-
-    feed.appendChild(div);
-  });
-
-  // duplicate for smooth scroll effect
-  filtered.forEach((r) => {
-
-    const div = document.createElement("div");
-    div.className = "item";
-
-    const id = r[0] || "";
-    const name = r[1] || "No Name";
-
-    div.innerHTML = `
-      <b>${name}</b><br>
-      <small>${id}</small>
+      <b>${r[1] || "No Name"}</b><br>
+      <small>ID: ${r[0] || ""}</small>
     `;
 
     feed.appendChild(div);
@@ -181,7 +139,7 @@ function render() {
 }
 
 fetchData();
-setInterval(fetchData, 2000);
+setInterval(fetchData, 3000);
 
 </script>
 
