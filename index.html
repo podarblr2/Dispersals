@@ -51,16 +51,17 @@
     }
 
     .item {
-      font-size: 50px;   /* ✅ REQUIRED SIZE */
-      padding: 12px;
-      margin: 8px 0;
+      font-size: 50px;
+      padding: 10px;
+      margin: 6px 0;
       border-bottom: 1px solid currentColor;
-      line-height: 1.2;
+
+      /* 🔥 IMPORTANT: single line */
+      white-space: nowrap;
     }
 
     .small {
-      font-size: 25px;
-      opacity: 0.8;
+      font-size: 50px;
     }
 
     button {
@@ -101,26 +102,27 @@ function setTheme(t) {
   document.body.className = t;
 }
 
-async function fetchData() {
-  try {
-    const res = await fetch(API + "?t=" + Date.now());
-    const json = await res.json();
-
-    rows = json.rows || [];
-    render();
-
-  } catch (err) {
-    console.error("API ERROR:", err);
-  }
-}
-
 function getOnlyTime(value) {
   if (!value) return "";
 
   const d = new Date(value);
   if (isNaN(d)) return value;
 
-  return d.toLocaleTimeString(); // ✅ ONLY TIME
+  return d.toLocaleTimeString(); // only time
+}
+
+async function fetchData() {
+  try {
+    const res = await fetch(API + "?t=" + Date.now());
+    const json = await res.json();
+
+    rows = json.rows || [];
+
+    render();
+
+  } catch (err) {
+    console.error("API ERROR:", err);
+  }
 }
 
 function render() {
@@ -139,16 +141,13 @@ function render() {
     const name = r[1] || "";
     const cls = r[2] || "";
     const status = r[3] || "";
-    const time = getOnlyTime(r[4]); // ✅ only time
+    const time = getOnlyTime(r[4]);
 
     const div = document.createElement("div");
     div.className = "item";
 
     div.innerHTML = `
-      ${name}<br>
-      <div class="small">
-        ${cls} | ${status} | ${time}
-      </div>
+      ${name} | ${cls} | ${status} | ${time}
     `;
 
     feed.appendChild(div);
@@ -156,6 +155,8 @@ function render() {
 }
 
 fetchData();
+
+/* 🔥 1.3 second refresh */
 setInterval(fetchData, 1300);
 
 </script>
