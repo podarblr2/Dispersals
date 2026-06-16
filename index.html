@@ -1,1 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Live Scrolling Dashboard</title>
 
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      overflow: hidden;
+      transition: 0.3s;
+    }
+
+    body.dark { background:#0f172a; color:white; }
+    body.light { background:#f1f5f9; color:black; }
+    body.neon { background:black; color:#39ff14; }
+
+    header {
+      display:flex;
+      justify-content:space-between;
+      padding:10px;
+      background:#111827;
+      color:white;
+      position:sticky;
+      top:0;
+      z-index:10;
+    }
+
+    .controls {
+      padding:10px;
+    }
+
+    input {
+      padding:6px;
+      width:200px;
+    }
+
+    /* SCROLL AREA */
+    .ticker {
+      height: calc(100vh - 120px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .feed {
+      display: flex;
+      flex-direction: column;
+      animation: scrollUp 20s linear infinite;
+    }
+
+    .item {
+      padding: 12px;
+      margin: 5px;
+      border-radius: 8px;
+      background: #1e293b;
+      border-left: 4px solid #38bdf8;
+    }
+
+    .new {
+      border-left: 4px solid #22c55e !important;
+      box-shadow: 0 0 10px #22c55e;
+    }
+
+    @keyframes scrollUp {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-50%); }
+    }
+  </style>
+</head>
+
+<body class="dark">
+
+<header>
+  <div>📡 Live Scrolling Dashboard</div>
+
+  <div>
+    <button onclick="setTheme('dark')">Dark</button>
+    <button onclick="setTheme('light')">Light</button>
+    <button onclick="setTheme('neon')">Neon</button>
+  </div>
+</header>
+
+<div class="controls">
+  🔎 <input id="search" placeholder="Search..." onkeyup="render()" />
+</div>
+
+<div class="ticker">
+  <div class="feed" id="feed"></div>
+</div>
+
+<audio id="beep">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
+
+<script>
+
+const API = "YOUR_WEB_APP_URL";
+
+let rows = [];
+let lastTop = "";
+
+function setTheme(t){
+  document.body.className = t;
+}
+
+async function fetchData(){
+
+  const res = await fetch(API + "?t=" + Date.now());
+  const json = await res.json();
+
+  const latest = JSON.stringify(json.rows[0]);
+
+  if(lastTop && latest !== lastTop){
+    document.getElementById("beep").play();
+  }
+
+  lastTop = latest;
+  rows = json.rows;
+
+  render();
+}
+
+function render(){
+
+  const q = document.getElementById("search").value.toLowerCase();
+  const feed = document.getElementById("feed");
+
+  let filtered = rows.filter(r =>
+    JSON.stringify(r).toLowerCase().includes(q)
+  );
+
+  feed.innerHTML = "";
+
+  filtered.forEach((r, i) => {
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    if(i === 0) div.classList.add("new");
+
+    div.innerHTML = `
+      <b>${r[1] || "No Data"}</b><br>
+      <small>${r[0] || ""}</small>
+    `;
+
+    feed.appendChild(div);
+  });
+
+  // duplicate content for seamless loop
+  filtered.forEach((r, i) => {
+
+    const div = document.createElement("div");
+    div.className = "item";
+
+    div.innerHTML = `
+      <b>${r[1] || "No Data"}</b><br>
+      <small>${r[0] || ""}</small>
+    `;
+
+    feed.appendChild(div);
+  });
+}
+
+fetchData();
+setInterval(fetchData, 2000);
+
+</script>
+
+</body>
+</html>
