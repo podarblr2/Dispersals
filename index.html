@@ -35,7 +35,6 @@
       width:200px;
     }
 
-    /* SCROLL AREA */
     .ticker {
       height: calc(100vh - 120px);
       overflow: hidden;
@@ -45,7 +44,6 @@
     .feed {
       display: flex;
       flex-direction: column;
-      animation: scrollUp 20s linear infinite;
     }
 
     .item {
@@ -103,30 +101,45 @@ function setTheme(t){
   document.body.className = t;
 }
 
-async function fetchData(){
+async function fetchData() {
+  try {
+    const res = await fetch(API + "?t=" + Date.now());
+    const text = await res.text();
 
-  const res = await fetch(API + "?t=" + Date.now());
-  const json = await res.json();
+    const json = JSON.parse(text);
 
-  const latest = JSON.stringify(json.rows[0]);
+    rows = json.rows || [];
 
-  if(lastTop && latest !== lastTop){
-    document.getElementById("beep").play();
+    // remove empty rows
+    rows = rows.filter(r => r && r.some(cell => cell !== ""));
+
+    const latest = JSON.stringify(rows[0] || []);
+
+    if (lastTop && latest !== lastTop) {
+      document.getElementById("beep").play();
+    }
+
+    lastTop = latest;
+
+    render();
+
+  } catch (err) {
+    console.error("Fetch Error:", err);
   }
-
-  lastTop = latest;
-  rows = json.rows;
-
-  render();
 }
 
-function render(){
+function render() {
 
   const q = document.getElementById("search").value.toLowerCase();
   const feed = document.getElementById("feed");
 
+  if (!rows.length) {
+    feed.innerHTML = "<div class='item'>No Data Found</div>";
+    return;
+  }
+
   let filtered = rows.filter(r =>
-    JSON.stringify(r).toLowerCase().includes(q)
+    (r || []).join(" ").toLowerCase().includes(q)
   );
 
   feed.innerHTML = "";
@@ -136,25 +149,31 @@ function render(){
     const div = document.createElement("div");
     div.className = "item";
 
-    if(i === 0) div.classList.add("new");
+    const id = r[0] || "";
+    const name = r[1] || "No Name";
+
+    if (i === 0) div.classList.add("new");
 
     div.innerHTML = `
-      <b>${r[1] || "No Data"}</b><br>
-      <small>${r[0] || ""}</small>
+      <b>${name}</b><br>
+      <small>${id}</small>
     `;
 
     feed.appendChild(div);
   });
 
-  // duplicate content for seamless loop
-  filtered.forEach((r, i) => {
+  // duplicate for smooth scroll effect
+  filtered.forEach((r) => {
 
     const div = document.createElement("div");
     div.className = "item";
 
+    const id = r[0] || "";
+    const name = r[1] || "No Name";
+
     div.innerHTML = `
-      <b>${r[1] || "No Data"}</b><br>
-      <small>${r[0] || ""}</small>
+      <b>${name}</b><br>
+      <small>${id}</small>
     `;
 
     feed.appendChild(div);
@@ -162,7 +181,7 @@ function render(){
 }
 
 fetchData();
-setInterval(fetchData, 2000);
+setInterval(fetchData, 3000);
 
 </script>
 
