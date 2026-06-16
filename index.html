@@ -37,8 +37,8 @@
       padding: 10px;
     }
 
-    /* HEADER ROW */
-    .headerRow, .cardRow {
+    /* HEADER + ROW GRID */
+    .row {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 10px;
@@ -53,24 +53,22 @@
       position: sticky;
       top: 0;
       background: inherit;
-      z-index: 1;
+      z-index: 2;
     }
 
-    /* CARD */
     .cardRow {
       font-size: 32px;
-      padding: 14px;
       margin: 8px 0;
       border-radius: 10px;
+      padding: 12px;
       background: rgba(255,255,255,0.05);
       transition: 0.3s;
     }
 
-    /* NEW ENTRY HIGHLIGHT */
     .new {
       background: rgba(34,197,94,0.25);
-      box-shadow: 0 0 15px #22c55e;
-      transform: scale(1.02);
+      box-shadow: 0 0 12px #22c55e;
+      transform: scale(1.01);
     }
 
     button {
@@ -84,7 +82,7 @@
 <body class="dark">
 
 <header>
-  <div>📡 Card Dashboard</div>
+  <div>📡 Live Card Dashboard</div>
 
   <div>
     <button onclick="setTheme('dark')">Dark</button>
@@ -105,12 +103,13 @@ const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP
 
 let rows = [];
 let headers = [];
-let lastData = "";
+let lastTop = "";
 
 function setTheme(t) {
   document.body.className = t;
 }
 
+/* convert time only */
 function getOnlyTime(value) {
   if (!value) return "";
   const d = new Date(value);
@@ -118,6 +117,7 @@ function getOnlyTime(value) {
   return d.toLocaleTimeString();
 }
 
+/* FETCH DATA */
 async function fetchData() {
   try {
     const res = await fetch(API + "?t=" + Date.now());
@@ -125,13 +125,9 @@ async function fetchData() {
 
     const allRows = json.rows || [];
 
-    headers = allRows[2] || [];     // ✅ ROW 3 = headers
-    rows = allRows.slice(3);        // data after row 3
-
-    const newHash = JSON.stringify(rows[0] || []);
-    if (newHash === lastData) return;
-
-    lastData = newHash;
+    // ✅ FIXED STRUCTURE
+    headers = allRows[2] || [];     // row 3 headers
+    rows = allRows.slice(3);        // row 4+ data
 
     render();
 
@@ -140,6 +136,7 @@ async function fetchData() {
   }
 }
 
+/* RENDER UI */
 function render() {
 
   const q = document.getElementById("search").value.toLowerCase();
@@ -152,22 +149,22 @@ function render() {
   let html = "";
 
   /* HEADER */
-  html += `<div class="headerRow">`;
+  html += `<div class="row headerRow">`;
   headers.forEach(h => {
     html += `<div>${h || ""}</div>`;
   });
   html += `</div>`;
 
-  /* CARDS */
+  /* DATA */
   filtered.forEach((r, i) => {
 
-    html += `<div class="cardRow ${i === 0 ? 'new' : ''}">`;
+    html += `<div class="row cardRow ${i === 0 ? 'new' : ''}">`;
 
     r.forEach((cell, idx) => {
 
       let value = cell;
 
-      // last column = time only
+      // last column → show only time
       if (idx === r.length - 1) {
         value = getOnlyTime(cell);
       }
@@ -181,8 +178,9 @@ function render() {
   container.innerHTML = html;
 }
 
+/* START */
 fetchData();
-setInterval(fetchData, 1300);
+setInterval(fetchData, 1200); // ✅ 1.2 sec refresh
 
 </script>
 
