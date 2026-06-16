@@ -1,23 +1,37 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>LED Dashboard</title>
+  <title>Live Dashboard</title>
 
   <style>
     body {
       margin: 0;
       font-family: Arial;
+      transition: 0.3s;
+    }
+
+    /* THEMES */
+    body.dark {
+      background: #0f172a;
+      color: white;
+    }
+
+    body.light {
+      background: #f1f5f9;
+      color: black;
+    }
+
+    body.neon {
       background: black;
       color: #39ff14;
-      overflow: hidden;
     }
 
     header {
+      display: flex;
+      justify-content: space-between;
       padding: 10px;
-      background: #111;
+      background: #111827;
       color: white;
-      display:flex;
-      justify-content:space-between;
     }
 
     .controls {
@@ -27,7 +41,7 @@
     input {
       padding: 8px;
       width: 250px;
-      font-size: 18px;
+      font-size: 16px;
     }
 
     .ticker {
@@ -36,39 +50,45 @@
       padding: 10px;
     }
 
-    .feed {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
     .item {
-      font-size: 74px;   /* 🔥 LED SIZE */
-      line-height: 1.1;
-      padding: 10px;
-      border-bottom: 2px solid #39ff14;
-      text-shadow: 0 0 10px #39ff14;
+      font-size: 50px;   /* ✅ REQUIRED SIZE */
+      padding: 12px;
+      margin: 8px 0;
+      border-bottom: 1px solid currentColor;
+      line-height: 1.2;
     }
 
     .small {
-      font-size: 30px;
+      font-size: 25px;
       opacity: 0.8;
+    }
+
+    button {
+      margin-left: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
     }
   </style>
 </head>
 
-<body>
+<body class="dark">
 
 <header>
-  <div>📺 LED DISPLAY</div>
+  <div>📡 Live Dashboard</div>
+
+  <div>
+    <button onclick="setTheme('dark')">Dark</button>
+    <button onclick="setTheme('light')">Light</button>
+    <button onclick="setTheme('neon')">Neon</button>
+  </div>
 </header>
 
 <div class="controls">
-  <input id="search" placeholder="Search..." onkeyup="render()" />
+  🔎 <input id="search" placeholder="Search..." onkeyup="render()" />
 </div>
 
 <div class="ticker">
-  <div class="feed" id="feed"></div>
+  <div id="feed"></div>
 </div>
 
 <script>
@@ -76,6 +96,10 @@
 const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
 
 let rows = [];
+
+function setTheme(t) {
+  document.body.className = t;
+}
 
 async function fetchData() {
   try {
@@ -85,9 +109,18 @@ async function fetchData() {
     rows = json.rows || [];
     render();
 
-  } catch (e) {
-    console.error(e);
+  } catch (err) {
+    console.error("API ERROR:", err);
   }
+}
+
+function getOnlyTime(value) {
+  if (!value) return "";
+
+  const d = new Date(value);
+  if (isNaN(d)) return value;
+
+  return d.toLocaleTimeString(); // ✅ ONLY TIME
 }
 
 function render() {
@@ -103,11 +136,10 @@ function render() {
 
   filtered.forEach(r => {
 
-    const id = r[0] || "";
     const name = r[1] || "";
     const cls = r[2] || "";
     const status = r[3] || "";
-    const time = r[4] || "";
+    const time = getOnlyTime(r[4]); // ✅ only time
 
     const div = document.createElement("div");
     div.className = "item";
