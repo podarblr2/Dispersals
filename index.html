@@ -15,18 +15,27 @@
     body.neon { background:black; color:#39ff14; }
 
     header {
-      display:flex;
-      justify-content:space-between;
-      padding:10px;
-      background:#111827;
-      color:white;
-    }
+  display: flex;
+  flex-direction: column; /* Allows vertical tracking blocks on the right side */
+  padding: 10px 20px;
+  background: #111827;
+  color: white;
+  gap: 10px;
+}
+
+    .header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
 
     .controls {
-      padding: 10px 15px;
-      display: flex;
-      justify-content: flex-end;
-    }
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 0; /* Clear extra paddings pushing things out of bounds */
+}
 
     input {
       padding:8px;
@@ -89,18 +98,21 @@ body.light .new {
 <body class="dark">
 
 <header>
-  <div><H1>  Podar International School, Magadi Road - Dispersals Live </H1></div>
+  <!-- Top bar area splitting title left and button cluster right -->
+  <div class="header-top">
+    <div style="font-size: 24px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Live </div>
+    <div>
+      <button onclick="setTheme('dark')">Dark</button>
+      <button onclick="setTheme('light')">Light</button>
+      <button onclick="setTheme('neon')">Neon</button>
+    </div>
+  </div>
 
-   <div>
-    <button onclick="setTheme('dark')">Dark</button>
-    <button onclick="setTheme('light')">Light</button>
-    <button onclick="setTheme('neon')">Neon</button>
+  <!-- Bottom section alignment tracking perfectly underneath button cluster -->
+  <div class="controls">
+    <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
   </div>
 </header>
-
-<div class="controls">
-  🔎 <input id="search" placeholder="Search..." onkeyup="render()" />
-</div>
 
 <div class="container" id="container"></div>
 
