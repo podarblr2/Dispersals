@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Live Dashboard</title>
+  <title>Dispersals Live</title>
 
   <style>
     body {
@@ -14,18 +14,25 @@
     body.light { background:#f1f5f9; color:black; }
     body.neon { background:black; color:#39ff14; }
 
-    /* Audio Unlock Screen Overlay Styling */
+    /* Fix: Centers entry gate as full screen layer without altering flow */
     #audioGate {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(15, 23, 42, 0.95);
-      z-index: 9999;
+      background: #0f172a;
+      z-index: 99999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
       color: white;
       text-align: center;
+    }
+    
+    .gate-logo {
+      max-width: 500px;
+      height: auto;
+      margin-bottom: 30px;
+      object-fit: contain;
     }
 
     #audioGate button {
@@ -39,11 +46,6 @@
       cursor: pointer;
       margin-top: 20px;
       box-shadow: 0 0 20px #facc15;
-      transition: 0.2s;
-    }
-
-    #audioGate button:hover {
-      transform: scale(1.05);
     }
 
     header {
@@ -100,7 +102,7 @@
 
     .row {
       display: grid;
-      grid-template-columns: 0.6fr 1.6fr 0.6fr 1.2fr 1fr; 
+      grid-template-columns: 0.6fr 2fr 0.8fr 0.6fr 1fr; 
       gap: 10px;
       padding: 12px;
       align-items: center;
@@ -108,7 +110,7 @@
 
     .headerRow {
       font-weight: bold;
-      font-size: 28px;
+      font-size: 36px;
       border-bottom: 2px solid currentColor;
       position: sticky;
       top: 0;
@@ -150,14 +152,15 @@
 
 <!-- Unlocks browser sound on screen startup -->
 <div id="audioGate">
-  <div style="font-size: 28px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Live </div>
-  <div style="font-size: 16px; margin-top: 10px; color: #9ca3af;">Click the button below to authorize the dashboard to play new entry alerts.</div>
-  <button onclick="unlockAudio()">Unmute & Start Dashboard</button>
+  <img class="gate-logo" src="C:\Users\Madhan\Pictures\Saved Pictures\logo1.png" alt="Podar Logo">
+  <div style="font-size: 28px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Portal </div>
+  <div style="font-size: 16px; margin-top: 10px; color: #9ca3af;"> Click the button below to</div>
+  <button onclick="unlockAudio()">Proceed Dashboard</button>
 </div>
 
 <header>
   <div class="header-top">
-    <div style="font-size: 26px; font-weight: bold;">📡 Live Dashboard</div>
+    <div style="font-size: 36px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Live </div>
     <div>
       <button onclick="setTheme('dark')">Dark</button>
       <button onclick="setTheme('light')">Light</button>
@@ -179,28 +182,22 @@
 
 const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
 
+// Fallback high-compatibility media channel
+const fallbackSound = new Audio("https://google.com");
+
 let rows = [];
 let headers = [];
-let lastTopCardSignature = ""; 
-let globalAudioCtx = null;
+let existingIDsSet = new Set(); 
+
+// Action to hide your startup entry gate when button is clicked
+function unlockAudio() {
+  document.getElementById("audioGate").style.display = "none";
+  playNotificationSound();
+}
 
 function setTheme(t) {
   document.body.className = t;
-}
-
-/* Explicitly unlocks the browser sound framework via the overlay screen click */
-function unlockAudio() {
-  globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  globalAudioCtx.resume().then(() => {
-    // Hide the popup screen overlay out of site bounds
-    document.getElementById("audioGate").style.display = "none";
-    // Play a short startup verification sound to confirm it works
-    playNotificationSound();
-    
-    // Start fetching data AFTER audio context is cleared
-    fetchData();
-    setInterval(fetchData, 1200);
-  });
+  playNotificationSound(); // Plays structural hardware sound verification pass
 }
 
 function getOnlyTime(value) {
@@ -216,40 +213,34 @@ function updateLiveClock() {
   document.getElementById("liveClock").innerText = "🕒 " + timeString;
 }
 
+/* Dual-Mode Complete Safety Audio Playback Engine */
 function playNotificationSound() {
-  if (!globalAudioCtx) return;
-  if (globalAudioCtx.state === 'suspended') {
-    globalAudioCtx.resume();
+  // Pass 1: Run native high-amplitude hardware square wave generator
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx) {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.3);
+    }
+  } catch (e) {
+    console.log("Synthesizer bypassed");
   }
 
+  // Pass 2: Simultaneously stream standard container MP3 file down device line
   try {
-    const osc1 = globalAudioCtx.createOscillator();
-    const gain1 = globalAudioCtx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(587.33, globalAudioCtx.currentTime); 
-    gain1.gain.setValueAtTime(0.1, globalAudioCtx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.1);
-    osc1.connect(gain1);
-    gain1.connect(globalAudioCtx.destination);
-    osc1.start();
-    osc1.stop(globalAudioCtx.currentTime + 0.1);
-
-    setTimeout(() => {
-      if (!globalAudioCtx) return;
-      const osc2 = globalAudioCtx.createOscillator();
-      const gain2 = globalAudioCtx.createGain();
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(880, globalAudioCtx.currentTime); 
-      gain2.gain.setValueAtTime(0.1, globalAudioCtx.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.15);
-      osc2.connect(gain2);
-      gain2.connect(globalAudioCtx.destination);
-      osc2.start();
-      osc2.stop(globalAudioCtx.currentTime + 0.15);
-    }, 80);
-
+    fallbackSound.currentTime = 0;
+    fallbackSound.volume = 2.0;
+    fallbackSound.play();
   } catch (e) {
-    console.error("Audio block verification check failure code trace:", e);
+    console.log("Media channel exception bypass");
   }
 }
 
@@ -260,27 +251,32 @@ async function fetchData() {
   try {
     const res = await fetch(API + "?t=" + Date.now());
     const json = await res.json();
+    const currentRows = json.rows || [];
 
-    const allRows = json.rows || [];
+    if (currentRows.length > 1) {
+      headers = currentRows[0] || [];
+      const dataRows = currentRows.slice(1);
 
-    headers = allRows[0] || [];     
-    const currentRows = allRows.slice(1);        
+      let foundNewID = false;
 
-    if (currentRows.length > 0) {
-      // Build string identification using the row values of the FIRST item
-      const currentSignature = currentRows[0].join("|");
+      dataRows.forEach(row => {
+        const rowID = String(row[0] || "").trim();
+        
+        if (rowID !== "") {
+          if (existingIDsSet.size > 0 && !existingIDsSet.has(rowID)) {
+            foundNewID = true;
+          }
+          existingIDsSet.add(rowID);
+        }
+      });
 
-      // ⚠️ CRITICAL FIX: Only play sound if lastTopCardSignature ALREADY had a sheet value
-      // This prevents a false sound alarm when loading the page for the first time
-      if (lastTopCardSignature && lastTopCardSignature !== currentSignature) {
+      if (foundNewID) {
         playNotificationSound();
       }
-      lastTopCardSignature = currentSignature;
+
+      rows = dataRows;
+      render();
     }
-
-    rows = currentRows;
-    render();
-
   } catch (err) {
     console.error("API ERROR:", err);
   }
@@ -328,7 +324,8 @@ function render() {
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
-// Notice: API fetch loop functions moved inside unlockAudio() to protect thread timings!
+fetchData();
+setInterval(fetchData, 1200);
 
 </script>
 
