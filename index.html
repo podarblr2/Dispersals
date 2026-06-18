@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Dispersals Live</title>
+  <title>Live Dashboard</title>
 
   <style>
     body {
@@ -15,42 +15,82 @@
     body.neon { background:black; color:#39ff14; }
 
     header {
-  display: flex;
-  flex-direction: column; /* Allows vertical tracking blocks on the right side */
-  padding: 10px 20px;
-  background: #111827;
-  color: white;
-  gap: 10px;
-}
+      display: flex;
+      flex-direction: column;
+      padding: 12px 20px;
+      background: #111827;
+      color: white;
+      gap: 10px;
+    }
 
+    /* Top bar splitting title layout left and button cluster right */
     .header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-}
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Container splitting live time left and search box right */
+    .header-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    /* Live Clock Styling */
+    .live-clock {
+      font-size: 20px;
+      font-weight: bold;
+      color: #9ca3af; /* Muted gray text color */
+      font-family: monospace; /* Keeps layout numbers perfectly fixed in width */
+    }
+
+    body.neon .live-clock {
+      color: #39ff14; /* Match neon theme colors */
+    }
 
     .controls {
-  display: flex;
-  justify-content: flex-end;
-  width: 100%;
-  padding: 0; /* Clear extra paddings pushing things out of bounds */
-}
+      display: flex;
+      justify-content: flex-end;
+    }
 
     input {
-      padding:8px;
-      width:250px;
+      padding: 8px 12px;
+      width: 250px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      outline: none;
+    }
+
+    body.light input {
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: white;
+      color: black;
+    }
+
+    body.dark input {
+      background: rgba(255,255,255,0.05);
+      color: white;
+    }
+
+    body.neon input {
+      background: black;
+      border: 1px solid #39ff14;
+      color: #39ff14;
     }
 
     .container {
-      height: calc(100vh - 120px);
+      height: calc(100vh - 150px); /* Height balanced for new double-row header */
       overflow-y: auto;
       padding: 10px;
     }
 
+    /* Proportional columns setup */
     .row {
       display: grid;
-      grid-template-columns: 0.6fr 2fr 1fr 0.5fr 1fr; 
+      grid-template-columns: 0.6fr 1.6fr 0.6fr 1.2fr 1fr; 
       gap: 10px;
       padding: 12px;
       align-items: center;
@@ -59,7 +99,7 @@
     .headerRow {
       font-weight: bold;
       font-size: 28px;
-      border-bottom: 4px solid currentColor;
+      border-bottom: 2px solid currentColor;
       position: sticky;
       top: 0;
       background: inherit;
@@ -74,18 +114,23 @@
       background: rgba(255,255,255,0.05);
     }
 
-    .new {
-      background: rgba(250, 204, 21, 0.35) !important; /* Semi-transparent yellow */
-  box-shadow: 0 0 15px #facc15; /* Glowing yellow shadow */
+    body.light .cardRow {
+      background: rgba(0,0,0,0.03);
     }
 
-    /* Custom bright yellow highlight layout exclusive to Light Mode */
-body.light .new {
-  background: #fef08a !important; /* Solid, bright pastel yellow */
-  box-shadow: 0 0 14px #eab308;   /* Vivid gold/yellow glow edge outline */
-  border: 1px solid #facc15;     /* Distinct border to pop against white */
-  color: #000000 !important;      /* Forces crisp black text readability */
-}
+    /* Dark/Neon Yellow Highlight */
+    .new {
+      background: rgba(250, 204, 21, 0.35) !important; 
+      box-shadow: 0 0 15px #facc15; 
+    }
+
+    /* Custom Bright Yellow Highlight exclusive to Light Theme */
+    body.light .new {
+      background: #fef08a !important; 
+      box-shadow: 0 0 14px #eab308;   
+      border: 1px solid #facc15;     
+      color: #000000 !important;      
+    }
 
     button {
       margin-left: 5px;
@@ -98,9 +143,8 @@ body.light .new {
 <body class="dark">
 
 <header>
-  <!-- Top bar area splitting title left and button cluster right -->
   <div class="header-top">
-    <div style="font-size: 24px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Live </div>
+    <div style="font-size: 26px; font-weight: bold;">📡 Live Dashboard</div>
     <div>
       <button onclick="setTheme('dark')">Dark</button>
       <button onclick="setTheme('light')">Light</button>
@@ -108,9 +152,13 @@ body.light .new {
     </div>
   </div>
 
-  <!-- Bottom section alignment tracking perfectly underneath button cluster -->
-  <div class="controls">
-    <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
+  <div class="header-bottom">
+    <!-- Live ticking clock goes here on the left side below title -->
+    <div class="live-clock" id="liveClock">🕒 --:--:-- --</div>
+    
+    <div class="controls">
+      <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
+    </div>
   </div>
 </header>
 
@@ -118,21 +166,63 @@ body.light .new {
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
+const API = "https://google.com";
 
 let rows = [];
 let headers = [];
-let lastTop = "";
+let lastTopCardSignature = ""; 
 
 function setTheme(t) {
   document.body.className = t;
 }
 
+/* Formats data row timestamps */
 function getOnlyTime(value) {
   if (!value) return "";
   const d = new Date(value);
   if (isNaN(d)) return value;
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+}
+
+/* 🕒 Live Clock Ticker Updating Every 1 Second */
+function updateLiveClock() {
+  const now = new Date();
+  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  document.getElementById("liveClock").innerText = "🕒 " + timeString;
+}
+
+/* Play audio when new sheet records drop in */
+function playNotificationSound() {
+  try {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
+    gain1.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+    osc1.start();
+    osc1.stop(audioCtx.currentTime + 0.1);
+
+    setTimeout(() => {
+      const osc2 = audioCtx.createOscillator();
+      const gain2 = audioCtx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.setValueAtTime(880, audioCtx.currentTime); 
+      gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc2.connect(gain2);
+      gain2.connect(audioCtx.destination);
+      osc2.start();
+      osc2.stop(audioCtx.currentTime + 0.15);
+    }, 80);
+
+  } catch (e) {
+    console.error("Audio block verification safety check catch:", e);
+  }
 }
 
 /* =========================
@@ -145,10 +235,19 @@ async function fetchData() {
 
     const allRows = json.rows || [];
 
-    // ✅ EXACT RULE YOU WANT
-    headers = allRows[0] || [];     // row 3
-    rows = allRows.slice(1);        // row 4 → last (NO CHANGE)
+    headers = allRows[0] || [];     
+    const currentRows = allRows.slice(1);        
 
+    if (currentRows.length > 0) {
+      const currentSignature = currentRows[0].join("|");
+
+      if (lastTopCardSignature && lastTopCardSignature !== currentSignature) {
+        playNotificationSound();
+      }
+      lastTopCardSignature = currentSignature;
+    }
+
+    rows = currentRows;
     render();
 
   } catch (err) {
@@ -160,7 +259,6 @@ async function fetchData() {
    RENDER (NO DUPLICATES)
 ========================= */
 function render() {
-
   const q = document.getElementById("search").value.toLowerCase();
   const container = document.getElementById("container");
 
@@ -177,19 +275,15 @@ function render() {
   });
   html += `</div>`;
 
-  /* DATA (NO DUPLICATE LOOP, NO EXTRA APPEND) */
+  /* DATA */
   filtered.forEach((r, i) => {
-
     html += `<div class="row cardRow ${i === 0 ? 'new' : ''}">`;
 
     r.forEach((cell, idx) => {
-
       let value = cell;
-
       if (idx === r.length - 1) {
         value = getOnlyTime(cell);
       }
-
       html += `<div>${value || ""}</div>`;
     });
 
@@ -199,7 +293,10 @@ function render() {
   container.innerHTML = html;
 }
 
-/* START */
+/* START INTERVAL RUNNERS */
+updateLiveClock();
+setInterval(updateLiveClock, 1000); // Ticks clock display loop precisely every second
+
 fetchData();
 setInterval(fetchData, 1200);
 
