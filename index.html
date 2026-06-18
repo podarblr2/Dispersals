@@ -171,12 +171,24 @@ const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP
 let rows = [];
 let headers = [];
 let lastTopCardSignature = ""; 
+let globalAudioCtx = null; // Master audio tracker locked globally
 
+// Force initializing the audio permission directly on theme selection interaction
 function setTheme(t) {
   document.body.className = t;
+  initAudioContext();
 }
 
-/* Formats data row timestamps */
+// Seamlessly unlock the browser audio system during a user click event
+function initAudioContext() {
+  if (!globalAudioCtx) {
+    globalAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (globalAudioCtx && globalAudioCtx.state === 'suspended') {
+    globalAudioCtx.resume();
+  }
+}
+
 function getOnlyTime(value) {
   if (!value) return "";
   const d = new Date(value);
@@ -184,44 +196,52 @@ function getOnlyTime(value) {
   return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 }
 
-/* 🕒 Live Clock Ticker Updating Every 1 Second */
 function updateLiveClock() {
   const now = new Date();
   const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
   document.getElementById("liveClock").innerText = "🕒 " + timeString;
 }
 
-/* Play audio when new sheet records drop in */
+/* 🔊 Improved Audio Engine Engine Connected to Master Unlock Context */
 function playNotificationSound() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    
-    const osc1 = audioCtx.createOscillator();
-    const gain1 = audioCtx.createGain();
-    osc1.type = 'sine';
-    osc1.frequency.setValueAtTime(587.33, audioCtx.currentTime); 
-    gain1.gain.setValueAtTime(0.1, audioCtx.currentTime);
-    gain1.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-    osc1.connect(gain1);
-    gain1.connect(audioCtx.destination);
-    osc1.start();
-    osc1.stop(audioCtx.currentTime + 0.1);
+  // Attempt to boot audio framework seamlessly if not yet active
+  initAudioContext();
+  
+  if (!globalAudioCtx || globalAudioCtx.state === 'suspended') {
+    console.warn("Audio skipped: Waiting for a user click interaction on the page.");
+    return;
+  }
 
+  try {
+    // Low electronic tone pitch node
+    const osc1 = globalAudioCtx.createOscillator();
+    const gain1 = globalAudioCtx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(587.33, globalAudioCtx.currentTime); 
+    gain1.gain.setValueAtTime(0.1, globalAudioCtx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.1);
+    osc1.connect(gain1);
+    gain1.connect(globalAudioCtx.destination);
+    osc1.start();
+    osc1.stop(globalAudioCtx.currentTime + 0.1);
+
+    // High electronic chime pitch node
     setTimeout(() => {
-      const osc2 = audioCtx.createOscillator();
-      const gain2 = audioCtx.createGain();
+      if (!globalAudioCtx) return;
+      const osc2 = globalAudioCtx.createOscillator();
+      const gain2 = globalAudioCtx.createGain();
       osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(880, audioCtx.currentTime); 
-      gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
-      gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+      osc2.frequency.setValueAtTime(880, globalAudioCtx.currentTime); 
+      gain2.gain.setValueAtTime(0.1, globalAudioCtx.currentTime);
+      gain2.gain.exponentialRampToValueAtTime(0.001, globalAudioCtx.currentTime + 0.15);
       osc2.connect(gain2);
-      gain2.connect(audioCtx.destination);
+      gain2.connect(globalAudioCtx.destination);
       osc2.start();
-      osc2.stop(audioCtx.currentTime + 0.15);
+      osc2.stop(globalAudioCtx.currentTime + 0.15);
     }, 80);
 
   } catch (e) {
-    console.error("Audio block verification safety check catch:", e);
+    console.error("Audio generation error fallback:", e);
   }
 }
 
