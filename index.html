@@ -124,7 +124,7 @@ async function fetchData() {
     const allRows = json.rows || [];
 
     // ✅ EXACT RULE YOU WANT
-    headers = allRows[2] || [];     // row 3
+    headers = allRows[0] || [];     // row 3
     rows = allRows.slice(3);        // row 4 → last (NO CHANGE)
 
     render();
