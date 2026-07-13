@@ -210,10 +210,7 @@ function getOnlyTime(value) {
 function updateLiveClock() {
   const now = new Date();
   const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  document.getElementById("liveClock").innerText = "🕒 " + timeString; <br>
-
-  document.getElementById("status").innerHTML =
-"Last update: " + new Date().toLocaleTimeString();
+  document.getElementById("liveClock").innerText = "🕒 " + timeString;
 }
 
 /* Dual-Mode Complete Safety Audio Playback Engine */
