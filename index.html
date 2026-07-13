@@ -169,7 +169,7 @@
   </div>
 
   <div class="header-bottom">
-    <div class="live-clock" id="liveClock">🕒 --:--:-- --</div>
+    <div class="live-clock" id="liveClock">🕒 --:--:-- -- <span id="connectionStatus">🟡 Checking...</span></div>
     <div class="controls">
       <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
     </div>
@@ -187,6 +187,7 @@ const fallbackSound = new Audio("https://google.com");
 
 let rows = [];
 let headers = [];
+let lastConnectionOK = false;
 let existingIDsSet = new Set(); 
 
 // Action to hide your startup entry gate when button is clicked
@@ -209,8 +210,19 @@ function getOnlyTime(value) {
 
 function updateLiveClock() {
   const now = new Date();
-  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  document.getElementById("liveClock").innerText = "🕒 " + timeString;
+
+  const timeString = now.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true
+  });
+
+  document.getElementById("liveClock").innerHTML =
+    "🕒 " + timeString + 
+    ' <span id="connectionStatus">' +
+    (lastConnectionOK ? "🟢 Connected" : "🔴 Disconnected") +
+    "</span>";
 }
 
 /* Dual-Mode Complete Safety Audio Playback Engine */
@@ -251,6 +263,8 @@ async function fetchData() {
   try {
     const res = await fetch(API + "?t=" + Date.now());
     const json = await res.json();
+    lastConnectionOK = true;
+    updateLiveClock();
     const currentRows = json.rows || [];
 
     if (currentRows.length > 1) {
@@ -278,6 +292,8 @@ async function fetchData() {
       render();
     }
   } catch (err) {
+    lastConnectionOK = false;
+    updateLiveClock();
     console.error("API ERROR:", err);
   }
 }
