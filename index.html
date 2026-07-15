@@ -333,43 +333,63 @@ function setTheme(t) {
 
 
   function speakStudentName(name) {
-
   if (!("speechSynthesis" in window)) {
     console.log("Speech not supported");
     return;
   }
 
+  // Cancel any ongoing speech to prevent overlapping queues
+  window.speechSynthesis.cancel();
+
   let count = 0;
 
   function speakAgain() {
-
     if (count >= 2) return;
 
     const msg = new SpeechSynthesisUtterance(name);
+    const voices = window.speechSynthesis.getVoices();
 
-    // Indian English voice preference
-    const voices = speechSynthesis.getVoices();
+    // 1. Search specifically for known Indian female voices
+    let femaleIndianVoice = voices.find(v => {
+      const nameLower = v.name.toLowerCase();
+      const langLower = v.lang.toLowerCase();
+      
+      // Match Indian English or Hindi/Indian regional languages
+      const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
+      
+      // Target known female voice names on Windows, macOS, and Android
+      const isFemale = nameLower.includes("heera") || 
+                       nameLower.includes("veena") || 
+                       nameLower.includes("priya") || 
+                       nameLower.includes("female") ||
+                       nameLower.includes("zira"); // fallback English female
 
-    const indianVoice = voices.find(v =>
-      v.lang === "en-IN" ||
-      v.name.toLowerCase().includes("india")
-    );
+      return isIndian && isFemale;
+    });
 
-    if (indianVoice) {
-      msg.voice = indianVoice;
+    // 2. Fallback to any Indian English voice if a specific female one isn't found
+    if (!femaleIndianVoice) {
+      femaleIndianVoice = voices.find(v => 
+        v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india")
+      );
+    }
+
+    // 3. Apply the voice
+    if (femaleIndianVoice) {
+      msg.voice = femaleIndianVoice;
     }
 
     msg.lang = "en-IN";
-    msg.rate = 0.80;   // slower for children names
-    msg.pitch = 1;
-    msg.volume = 3;
+    msg.rate = 0.82;   // Slightly slower so children's names are pronounced clearly
+    msg.pitch = 1.1;   // Slightly higher pitch sounds more naturally female on basic synthesizers
+    msg.volume = 1;
 
     msg.onend = function() {
       count++;
-      setTimeout(speakAgain, 1500);
+      setTimeout(speakAgain, 400);
     };
 
-    speechSynthesis.speak(msg);
+    window.speechSynthesis.speak(msg);
   }
 
   speakAgain();
