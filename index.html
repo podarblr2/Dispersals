@@ -380,13 +380,13 @@ function setTheme(t) {
     }
 
     msg.lang = "en-IN";
-    msg.rate = 0.80;   // Slightly slower so children's names are pronounced clearly
-    msg.pitch = 1.2;   // Slightly higher pitch sounds more naturally female on basic synthesizers
+    msg.rate = 0.82;   // Slightly slower so children's names are pronounced clearly
+    msg.pitch = 1.0;   // Slightly higher pitch sounds more naturally female on basic synthesizers
     msg.volume = 2;
 
     msg.onend = function() {
       count++;
-      setTimeout(speakAgain, 800);
+      setTimeout(speakAgain, 600);
     };
 
     window.speechSynthesis.speak(msg);
