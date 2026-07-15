@@ -168,6 +168,87 @@ body.neon select{
     color:#39ff14;
     border:1px solid #39ff14;
 }
+
+
+    /* ==========================
+   ANDROID + LAPTOP RESPONSIVE
+========================== */
+
+@media (max-width: 900px) {
+
+  header {
+    padding: 10px;
+  }
+
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-top div:first-child {
+    font-size: 24px !important;
+  }
+
+  .header-bottom {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .controls input,
+  .controls select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .row {
+    grid-template-columns:
+      0.5fr
+      2fr
+      0.8fr
+      0.8fr
+      1fr;
+
+    font-size: 20px;
+  }
+
+  .headerRow {
+    font-size: 22px;
+  }
+
+  .cardRow {
+    font-size: 20px;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .row {
+    grid-template-columns:
+      0.4fr
+      1.8fr
+      0.8fr
+      0.8fr
+      1fr;
+
+    font-size: 16px;
+  }
+
+  .headerRow {
+    font-size: 17px;
+  }
+
+  .cardRow {
+    font-size: 17px;
+  }
+
+}
     
   </style>
 </head>
