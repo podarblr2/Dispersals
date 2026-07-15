@@ -145,6 +145,30 @@
       padding: 5px 10px;
       cursor: pointer;
     }
+
+    select {
+  padding:8px 12px;
+  border-radius:6px;
+  margin-right:8px;
+  font-size:16px;
+}
+
+body.dark select{
+    background:#111;
+    color:white;
+}
+
+body.light select{
+    background:white;
+    color:black;
+}
+
+body.neon select{
+    background:black;
+    color:#39ff14;
+    border:1px solid #39ff14;
+}
+    
   </style>
 </head>
 
@@ -171,8 +195,23 @@
   <div class="header-bottom">
     <div class="live-clock" id="liveClock">🕒 --:--:-- -- <span id="connectionStatus">🟡 Checking...</span></div>
     <div class="controls">
-      <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
-    </div>
+  <select id="classFilter" onchange="render()">
+    <option value="">All Classes</option>
+    <option>I</option>
+    <option>II</option>
+    <option>III</option>
+    <option>IV</option>
+    <option>V</option>
+    <option>VI</option>
+    <option>VII</option>
+    <option>VIII</option>
+    <option>IX</option>
+    <option>X</option>
+    <option>XI</option>
+    <option>XII</option>
+  </select>
+  <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
+</div>
   </div>
 </header>
 
@@ -304,9 +343,19 @@ function render() {
   const q = document.getElementById("search").value.toLowerCase();
   const container = document.getElementById("container");
 
-  const filtered = rows.filter(r =>
-    (r || []).join(" ").toLowerCase().includes(q)
-  );
+  const selectedClass = document.getElementById("classFilter").value;
+
+const filtered = rows.filter(r => {
+
+    const matchesSearch =
+        (r || []).join(" ").toLowerCase().includes(q);
+
+    const matchesClass =
+        selectedClass === "" ||
+        String(r[2]).trim() === selectedClass;
+
+    return matchesSearch && matchesClass;
+});
 
   let html = "";
 
