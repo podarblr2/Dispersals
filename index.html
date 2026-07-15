@@ -331,6 +331,50 @@ function setTheme(t) {
   playNotificationSound(); // Plays structural hardware sound verification pass
 }
 
+
+  function speakStudentName(name) {
+
+  if (!("speechSynthesis" in window)) {
+    console.log("Speech not supported");
+    return;
+  }
+
+  let count = 0;
+
+  function speakAgain() {
+
+    if (count >= 2) return;
+
+    const msg = new SpeechSynthesisUtterance(name);
+
+    // Indian English voice preference
+    const voices = speechSynthesis.getVoices();
+
+    const indianVoice = voices.find(v =>
+      v.lang === "en-IN" ||
+      v.name.toLowerCase().includes("india")
+    );
+
+    if (indianVoice) {
+      msg.voice = indianVoice;
+    }
+
+    msg.lang = "en-IN";
+    msg.rate = 0.85;   // slower for children names
+    msg.pitch = 1;
+    msg.volume = 1;
+
+    msg.onend = function() {
+      count++;
+      setTimeout(speakAgain, 500);
+    };
+
+    speechSynthesis.speak(msg);
+  }
+
+  speakAgain();
+}
+
 function getOnlyTime(value) {
   if (!value) return "";
   const d = new Date(value);
@@ -413,9 +457,18 @@ async function fetchData() {
         }
       });
 
-      if (foundNewID) {
-        playNotificationSound();
-      }
+     if (foundNewID) {
+
+    playNotificationSound();
+
+    const latestRow = dataRows[dataRows.length - 1];
+
+    const studentName = latestRow[1];
+
+    if(studentName){
+        speakStudentName(studentName);
+    }
+}
 
       rows = dataRows;
       render();
