@@ -454,14 +454,9 @@ function playNotificationSound() {
 ============================================== */
 async function fetchData() {
   try {
-    // Forces mobile devices to always get fresh data instead of using cached local storage
-    const res = await fetch(API + "?t=" + Date.now(), {
-      cache: "no-store",
-      headers: {
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      }
-    });
+    // Reverted directly back to your original, direct fetch to pass security/CORS blocks
+    // While retaining the time query "?t=" parameter to naturally trick mobile caching.
+    const res = await fetch(API + "?t=" + Date.now());
     const json = await res.json();
     lastConnectionOK = true;
     updateLiveClock();
@@ -502,9 +497,9 @@ async function fetchData() {
     updateLiveClock();
     console.error("API ERROR:", err);
   } finally {
-    // Crucial recursive loop: Ensures next request is triggered ONLY 2 seconds 
-    // after the previous network response (or failure) completes. Prevents mobile queue lockups.
-    setTimeout(fetchData, 2000);
+    // Forces the API fetch loop to repeat safely every 1.5 seconds.
+    // It schedules the next check ONLY when this one finishes or fails!
+    setTimeout(fetchData, 1500);
   }
 }
 
@@ -554,7 +549,7 @@ function render() {
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
-// Kick off the optimized non-overlapping API loop
+// Kick off the safe non-overlapping background fetch engine loop
 fetchData();
 
 </script>
