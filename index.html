@@ -310,7 +310,7 @@ body.neon select{
 
 <script>
 
-const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
+const API = "my api";
 
 // Fallback high-compatibility media channel
 const fallbackSound = new Audio("https://google.com");
@@ -449,12 +449,19 @@ function playNotificationSound() {
   }
 }
 
-/* =========================
-   FETCH (CLEAN + DIRECT)
-========================= */
+/* ==============================================
+   SAFE MOBILE-FRIENDLY RECURSIVE FETCH ENGINE
+============================================== */
 async function fetchData() {
   try {
-    const res = await fetch(API + "?t=" + Date.now());
+    // Forces mobile devices to always get fresh data instead of using cached local storage
+    const res = await fetch(API + "?t=" + Date.now(), {
+      cache: "no-store",
+      headers: {
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
+      }
+    });
     const json = await res.json();
     lastConnectionOK = true;
     updateLiveClock();
@@ -477,18 +484,15 @@ async function fetchData() {
         }
       });
 
-     if (foundNewID) {
+      if (foundNewID) {
+        playNotificationSound();
+        const latestRow = dataRows[0];
+        const studentName = latestRow[1];
 
-    playNotificationSound();
-
-    const latestRow = dataRows[0];
-
-    const studentName = latestRow[1];
-
-    if(studentName){
-        speakStudentName(studentName);
-    }
-}
+        if(studentName){
+            speakStudentName(studentName);
+        }
+      }
 
       rows = dataRows;
       render();
@@ -497,6 +501,10 @@ async function fetchData() {
     lastConnectionOK = false;
     updateLiveClock();
     console.error("API ERROR:", err);
+  } finally {
+    // Crucial recursive loop: Ensures next request is triggered ONLY 2 seconds 
+    // after the previous network response (or failure) completes. Prevents mobile queue lockups.
+    setTimeout(fetchData, 2000);
   }
 }
 
@@ -509,17 +517,11 @@ function render() {
 
   const selectedClass = document.getElementById("classFilter").value;
 
-const filtered = rows.filter(r => {
-
-    const matchesSearch =
-        (r || []).join(" ").toLowerCase().includes(q);
-
-    const matchesClass =
-        selectedClass === "" ||
-        String(r[2]).trim() === selectedClass;
-
+  const filtered = rows.filter(r => {
+    const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
+    const matchesClass = selectedClass === "" || String(r[2]).trim() === selectedClass;
     return matchesSearch && matchesClass;
-});
+  });
 
   let html = "";
 
@@ -552,8 +554,8 @@ const filtered = rows.filter(r => {
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
+// Kick off the optimized non-overlapping API loop
 fetchData();
-setInterval(fetchData, 1200);
 
 </script>
 
