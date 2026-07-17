@@ -380,8 +380,8 @@ function setTheme(t) {
     }
 
     msg.lang = "en-IN";
-    msg.rate = 0.75;   // Slightly slower so children's names are pronounced clearly
-    msg.pitch = 1.28;   // Slightly higher pitch sounds more naturally female on basic synthesizers
+    msg.rate = 0.72;   // Slightly slower so children's names are pronounced clearly
+    msg.pitch = 1.35;   // Slightly higher pitch sounds more naturally female on basic synthesizers
     msg.volume = 1.0;
 
     msg.onend = function() {
@@ -449,13 +449,11 @@ function playNotificationSound() {
   }
 }
 
-/* ==============================================
-   SAFE MOBILE-FRIENDLY RECURSIVE FETCH ENGINE
-============================================== */
+/* =========================
+   FETCH (CLEAN + DIRECT)
+========================= */
 async function fetchData() {
   try {
-    // Reverted directly back to your original, direct fetch to pass security/CORS blocks
-    // While retaining the time query "?t=" parameter to naturally trick mobile caching.
     const res = await fetch(API + "?t=" + Date.now());
     const json = await res.json();
     lastConnectionOK = true;
@@ -479,15 +477,18 @@ async function fetchData() {
         }
       });
 
-      if (foundNewID) {
-        playNotificationSound();
-        const latestRow = dataRows[0];
-        const studentName = latestRow[1];
+     if (foundNewID) {
 
-        if(studentName){
-            speakStudentName(studentName);
-        }
-      }
+    playNotificationSound();
+
+    const latestRow = dataRows[0];
+
+    const studentName = latestRow[1];
+
+    if(studentName){
+        speakStudentName(studentName);
+    }
+}
 
       rows = dataRows;
       render();
@@ -496,10 +497,6 @@ async function fetchData() {
     lastConnectionOK = false;
     updateLiveClock();
     console.error("API ERROR:", err);
-  } finally {
-    // Forces the API fetch loop to repeat safely every 1.5 seconds.
-    // It schedules the next check ONLY when this one finishes or fails!
-    setTimeout(fetchData, 1500);
   }
 }
 
@@ -512,11 +509,17 @@ function render() {
 
   const selectedClass = document.getElementById("classFilter").value;
 
-  const filtered = rows.filter(r => {
-    const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
-    const matchesClass = selectedClass === "" || String(r[2]).trim() === selectedClass;
+const filtered = rows.filter(r => {
+
+    const matchesSearch =
+        (r || []).join(" ").toLowerCase().includes(q);
+
+    const matchesClass =
+        selectedClass === "" ||
+        String(r[2]).trim() === selectedClass;
+
     return matchesSearch && matchesClass;
-  });
+});
 
   let html = "";
 
@@ -549,8 +552,8 @@ function render() {
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
-// Kick off the safe non-overlapping background fetch engine loop
 fetchData();
+setInterval(fetchData, 1200);
 
 </script>
 
