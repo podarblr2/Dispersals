@@ -135,8 +135,8 @@
     body.light .new {
       background: #fef08a !important; 
       box-shadow: 0 0 14px #eab308;    
-      border: 1px solid #facc15;       
-      color: #000000 !important;       
+      border: 1px solid #facc15;        
+      color: #000000 !important;        
     }
 
     button {
@@ -200,28 +200,18 @@
     <div class="controls">
       <select id="classFilter" onchange="render()">
         <option value="">All Classes</option>
-        <option>I R</option>
-        <option>I L</option>
-        <option>II R</option>
-        <option>II L</option>
-        <option>III R</option>
-        <option>III L</option>
-        <option>IV R</option>
-        <option>IV L</option>
-        <option>V R</option>
-        <option>V L</option>
-        <option>VI R</option>
-        <option>VI L</option>
-        <option>VII R</option>
-        <option>VII L</option>
-        <option>VIII R</option>
-        <option>VIII L</option>
-        <option>IX R</option>
-        <option>IX L</option>
-        <option>X R</option>
-        <option>X L</option>
-        <option>XI</option>
-        <option>XII</option>
+        <option value="I">I</option>
+        <option value="II">II</option>
+        <option value="III">III</option>
+        <option value="IV">IV</option>
+        <option value="V">V</option>
+        <option value="VI">VI</option>
+        <option value="VII">VII</option>
+        <option value="VIII">VIII</option>
+        <option value="IX">IX</option>
+        <option value="X">X</option>
+        <option value="XI">XI</option>
+        <option value="XII">XII</option>
       </select>
       <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
     </div>
@@ -240,14 +230,12 @@ let headers = [];
 let lastConnectionOK = false;
 let existingIDsSet = new Set(); 
 let isInitialLoad = true;
-let audioUnlocked = true; // Default to true so sound functions execute normally after clicking the gate button
+let audioUnlocked = true;
 
-// Speech Queue Control Variables
 let speechQueue = [];
 let isSpeaking = false;
 let systemVoices = [];
 
-// Preload and track system voices safely across browsers
 function loadVoices() {
   if (!("speechSynthesis" in window)) return;
   systemVoices = window.speechSynthesis.getVoices();
@@ -271,7 +259,6 @@ function unlockAudio() {
     window.speechSynthesis.speak(dummy);
   }
 
-  // Trigger initial top student announcement safely AFTER user clicks proceed
   if (rows.length > 0) {
     const topStudentName = rows[0][1];
     if (topStudentName) {
@@ -286,10 +273,10 @@ function setTheme(t) {
   playNotificationSound();
 }
 
-/* Safe Sequenced Speech Queue Manager preserving exact Indian Female profile and pacing */
 function queueStudentName(name) {
-  speechQueue.push(name);
-  speechQueue.push(name); // Speaks twice sequentially in exact arrival order
+  // Push an object containing both the name and the intended gender
+  speechQueue.push({ text: name, gender: 'female' });
+  speechQueue.push({ text: name, gender: 'male' }); 
   processSpeechQueue();
 }
 
@@ -298,49 +285,57 @@ function processSpeechQueue() {
   if (!("speechSynthesis" in window)) return;
 
   isSpeaking = true;
-  const nameToSpeak = speechQueue.shift();
+  const currentSpeech = speechQueue.shift();
 
-  const msg = new SpeechSynthesisUtterance(nameToSpeak);
+  const msg = new SpeechSynthesisUtterance(currentSpeech.text);
   
   if (systemVoices.length === 0) {
     systemVoices = window.speechSynthesis.getVoices();
   }
 
-  // 1. Search specifically for known Indian female voices and regional profiles
-  let femaleIndianVoice = systemVoices.find(v => {
-    const nameLower = v.name.toLowerCase();
-    const langLower = v.lang.toLowerCase();
-    
-    const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
-    const isFemale = nameLower.includes("heera") || 
-                     nameLower.includes("veena") || 
-                     nameLower.includes("priya") || 
-                     nameLower.includes("female") ||
-                     nameLower.includes("zira");
+  let selectedVoice;
 
-    return isIndian && isFemale;
-  });
+  if (currentSpeech.gender === 'female') {
+    // 1st Time: Female Indian Profile Search
+    selectedVoice = systemVoices.find(v => {
+      const nameLower = v.name.toLowerCase();
+      const langLower = v.lang.toLowerCase();
+      const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
+      const isFemale = nameLower.includes("heera") || nameLower.includes("veena") || nameLower.includes("priya") || nameLower.includes("female") || nameLower.includes("zira");
+      return isIndian && isFemale;
+    });
+  } else {
+    // 2nd Time: Male Indian Profile Search
+    selectedVoice = systemVoices.find(v => {
+      const nameLower = v.name.toLowerCase();
+      const langLower = v.lang.toLowerCase();
+      const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
+      const isMale = nameLower.includes("ravi") || nameLower.includes("male") || (!nameLower.includes("heera") && !nameLower.includes("veena") && !nameLower.includes("priya") && !nameLower.includes("female") && !nameLower.includes("zira"));
+      return isIndian && isMale;
+    });
+  }
 
-  // 2. Fallback to any Indian English voice if a specific female one isn't found
-  if (!femaleIndianVoice) {
-    femaleIndianVoice = systemVoices.find(v => 
+  // Fallback to any Indian voice if specific gender profile isn't found
+  if (!selectedVoice) {
+    selectedVoice = systemVoices.find(v => 
       v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india")
     );
   }
 
-  // 3. Apply the voice if discovered
-  if (femaleIndianVoice) {
-    msg.voice = femaleIndianVoice;
+  if (selectedVoice) {
+    msg.voice = selectedVoice;
   }
 
   msg.lang = "en-IN";
-  msg.rate = 0.72;   // Maintained original slow, clear pace for children's names
-  msg.pitch = 1.35;  // Maintained original higher pitch for natural female synthesis
+  msg.rate = 0.75;   
+  
+  // Dynamic Pitch: Higher for female, lower for male to guarantee contrast even on basic fallback voices
+  msg.pitch = currentSpeech.gender === 'female' ? 1.48 : 0.75;  
   msg.volume = 1.0;
 
   msg.onend = function() {
     isSpeaking = false;
-    setTimeout(processSpeechQueue, 400); // Maintained breathable sequential gap
+    setTimeout(processSpeechQueue, 400); 
   };
 
   msg.onerror = function() {
@@ -429,7 +424,6 @@ async function fetchData() {
 
       if (isInitialLoad) {
         isInitialLoad = false;
-        // Populate existing IDs on first load so they aren't treated as new
       } else if (newlyDetectedRows.length > 0) {
         playNotificationSound();
         newlyDetectedRows.forEach(row => {
@@ -457,7 +451,10 @@ function render() {
 
   const filtered = rows.filter(r => {
     const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
-    const matchesClass = selectedClass === "" || String(r[2]).trim() === selectedClass;
+    const rawClassCell = String(r[2] || "").trim();
+    const baseClassGrade = rawClassCell.replace(/\s+[RL]\b/i, "").trim();
+
+    const matchesClass = selectedClass === "" || baseClassGrade === selectedClass;
     return matchesSearch && matchesClass;
   });
 
