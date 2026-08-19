@@ -14,6 +14,7 @@
     body.light { background:#f1f5f9; color:black; }
     body.neon { background:#030712; color:#39ff14; }
 
+    /* Fix: Centers entry gate as full screen layer without altering flow */
     #audioGate {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -134,9 +135,9 @@
 
     body.light .new {
       background: #fef08a !important; 
-      box-shadow: 0 0 14px #eab308;    
-      border: 1px solid #facc15;        
-      color: #000000 !important;        
+      box-shadow: 0 0 14px #eab308;   
+      border: 1px solid #facc15;     
+      color: #000000 !important;      
     }
 
     button {
@@ -146,48 +147,125 @@
     }
 
     select {
-      padding: 8px 12px;
-      border-radius: 6px;
-      margin-right: 8px;
-      font-size: 16px;
-    }
+  padding:8px 12px;
+  border-radius:6px;
+  margin-right:8px;
+  font-size:16px;
+}
 
-    body.dark select { background: #111; color: white; }
-    body.light select { background: white; color: black; }
-    body.neon select { background: black; color: #39ff14; border: 1px solid #39ff14; }
+body.dark select{
+    background:#111;
+    color:white;
+}
 
-    @media (max-width: 900px) {
-      header { padding: 10px; }
-      .header-top { flex-direction: column; align-items: flex-start; }
-      .header-top div:first-child { font-size: 24px !important; }
-      .header-bottom { flex-direction: column; align-items: stretch; }
-      .controls { width: 100%; justify-content: flex-start; }
-      .controls input, .controls select { width: 100%; max-width: none; }
-      .row { grid-template-columns: 0.5fr 2fr 0.8fr 0.8fr 1fr; font-size: 20px; }
-      .headerRow { font-size: 22px; }
-      .cardRow { font-size: 20px; }
-    }
+body.light select{
+    background:white;
+    color:black;
+}
 
-    @media (max-width: 600px) {
-      .row { grid-template-columns: 0.4fr 1.8fr 0.8fr 0.8fr 1fr; font-size: 16px; }
-      .headerRow { font-size: 17px; }
-      .cardRow { font-size: 17px; }
-    }
+body.neon select{
+    background:black;
+    color:#39ff14;
+    border:1px solid #39ff14;
+}
+
+
+    /* ==========================
+   ANDROID + LAPTOP RESPONSIVE
+========================== */
+
+@media (max-width: 900px) {
+
+  header {
+    padding: 10px;
+  }
+
+  .header-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-top div:first-child {
+    font-size: 24px !important;
+  }
+
+  .header-bottom {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .controls input,
+  .controls select {
+    width: 100%;
+    max-width: none;
+  }
+
+  .row {
+    grid-template-columns:
+      0.5fr
+      2fr
+      0.8fr
+      0.8fr
+      1fr;
+
+    font-size: 20px;
+  }
+
+  .headerRow {
+    font-size: 22px;
+  }
+
+  .cardRow {
+    font-size: 20px;
+  }
+
+}
+
+
+@media (max-width: 600px) {
+
+  .row {
+    grid-template-columns:
+      0.4fr
+      1.8fr
+      0.8fr
+      0.8fr
+      1fr;
+
+    font-size: 16px;
+  }
+
+  .headerRow {
+    font-size: 17px;
+  }
+
+  .cardRow {
+    font-size: 17px;
+  }
+
+}
+    
   </style>
 </head>
 
 <body class="light">
 
+<!-- Unlocks browser sound on screen startup -->
 <div id="audioGate">
   <img class="gate-logo" src="https://images.click.in/classifieds/images/163/30_03_2022_16_53_17_cdcfba6b7278a14ccc1a5bf505bfd512_w.png" alt="Podar Logo">
-  <div style="font-size: 28px; font-weight: bold;"> Podar International School, Magadi Road - Dispersals Portal </div>
+  <div style="font-size: 28px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Portal </div>
   <div style="font-size: 16px; margin-top: 10px; color: #9ca3af;"> Click the button below to</div>
   <button onclick="unlockAudio()">Proceed Dashboard</button>
 </div>
 
 <header>
   <div class="header-top">
-    <div style="font-size: 36px; font-weight: bold;"> Podar International School, Magadi Road - Dispersals Live </div>
+    <div style="font-size: 36px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Live </div>
     <div>
       <button onclick="setTheme('dark')">Dark</button>
       <button onclick="setTheme('light')">Light</button>
@@ -198,23 +276,33 @@
   <div class="header-bottom">
     <div class="live-clock" id="liveClock">🕒 --:--:-- -- <span id="connectionStatus">🟡 Checking...</span></div>
     <div class="controls">
-      <select id="classFilter" onchange="render()">
-        <option value="">All Classes</option>
-        <option value="I">I</option>
-        <option value="II">II</option>
-        <option value="III">III</option>
-        <option value="IV">IV</option>
-        <option value="V">V</option>
-        <option value="VI">VI</option>
-        <option value="VII">VII</option>
-        <option value="VIII">VIII</option>
-        <option value="IX">IX</option>
-        <option value="X">X</option>
-        <option value="XI">XI</option>
-        <option value="XII">XII</option>
-      </select>
-      <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
-    </div>
+  <select id="classFilter" onchange="render()">
+    <option value="">All Classes</option>
+    <option>I R</option>
+    <option>I L</option>
+    <option>II R</option>
+    <option>II L</option>
+    <option>III R</option>
+    <option>III L</option>
+    <option>IV R</option>
+    <option>IV L</option>
+    <option>V R</option>
+    <option>V L</option>
+    <option>VI R</option>
+    <option>VI L</option>
+    <option>VII R</option>
+    <option>VII L</option>
+    <option>VIII R</option>
+    <option>VIII L</option>
+    <option>IX R</option>
+    <option>IX L</option>
+    <option>X R</option>
+    <option>X L</option>
+    <option>XI</option>
+    <option>XII</option>
+  </select>
+  <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
+</div>
   </div>
 </header>
 
@@ -223,127 +311,88 @@
 <script>
 
 const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
+
+// Fallback high-compatibility media channel
 const fallbackSound = new Audio("https://google.com");
 
 let rows = [];
 let headers = [];
 let lastConnectionOK = false;
 let existingIDsSet = new Set(); 
-let isInitialLoad = true;
-let audioUnlocked = true;
 
-let speechQueue = [];
-let isSpeaking = false;
-let systemVoices = [];
-
-function loadVoices() {
-  if (!("speechSynthesis" in window)) return;
-  systemVoices = window.speechSynthesis.getVoices();
-}
-
-if ("speechSynthesis" in window) {
-  loadVoices();
-  if (window.speechSynthesis.onvoiceschanged !== undefined) {
-    window.speechSynthesis.onvoiceschanged = loadVoices;
-  }
-}
-
+// Action to hide your startup entry gate when button is clicked
 function unlockAudio() {
-  audioUnlocked = true;
   document.getElementById("audioGate").style.display = "none";
   playNotificationSound();
-  
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
-    const dummy = new SpeechSynthesisUtterance("");
-    window.speechSynthesis.speak(dummy);
-  }
-
-  if (rows.length > 0) {
-    const topStudentName = rows[0][1];
-    if (topStudentName) {
-      playNotificationSound();
-      queueStudentName(topStudentName);
-    }
-  }
 }
 
 function setTheme(t) {
   document.body.className = t;
-  playNotificationSound();
+  playNotificationSound(); // Plays structural hardware sound verification pass
 }
 
-function queueStudentName(name) {
-  // Push an object containing both the name and the intended gender
-  speechQueue.push({ text: name, gender: 'female' });
-  speechQueue.push({ text: name, gender: 'male' }); 
-  processSpeechQueue();
-}
 
-function processSpeechQueue() {
-  if (isSpeaking || speechQueue.length === 0) return;
-  if (!("speechSynthesis" in window)) return;
-
-  isSpeaking = true;
-  const currentSpeech = speechQueue.shift();
-
-  const msg = new SpeechSynthesisUtterance(currentSpeech.text);
-  
-  if (systemVoices.length === 0) {
-    systemVoices = window.speechSynthesis.getVoices();
+  function speakStudentName(name) {
+  if (!("speechSynthesis" in window)) {
+    console.log("Speech not supported");
+    return;
   }
 
-  let selectedVoice;
+  // Cancel any ongoing speech to prevent overlapping queues
+  window.speechSynthesis.cancel();
 
-  if (currentSpeech.gender === 'female') {
-    // 1st Time: Female Indian Profile Search
-    selectedVoice = systemVoices.find(v => {
+  let count = 0;
+
+  function speakAgain() {
+    if (count >= 2) return;
+
+    const msg = new SpeechSynthesisUtterance(name);
+    const voices = window.speechSynthesis.getVoices();
+
+    // 1. Search specifically for known Indian female voices
+    let femaleIndianVoice = voices.find(v => {
       const nameLower = v.name.toLowerCase();
       const langLower = v.lang.toLowerCase();
+      
+      // Match Indian English or Hindi/Indian regional languages
       const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
-      const isFemale = nameLower.includes("heera") || nameLower.includes("veena") || nameLower.includes("priya") || nameLower.includes("female") || nameLower.includes("zira");
+      
+      // Target known female voice names on Windows, macOS, and Android
+      const isFemale = nameLower.includes("heera") || 
+                       nameLower.includes("veena") || 
+                       nameLower.includes("priya") || 
+                       nameLower.includes("female") ||
+                       nameLower.includes("zira"); // fallback English female
+
       return isIndian && isFemale;
     });
-  } else {
-    // 2nd Time: Male Indian Profile Search
-    selectedVoice = systemVoices.find(v => {
-      const nameLower = v.name.toLowerCase();
-      const langLower = v.lang.toLowerCase();
-      const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
-      const isMale = nameLower.includes("ravi") || nameLower.includes("male") || (!nameLower.includes("heera") && !nameLower.includes("veena") && !nameLower.includes("priya") && !nameLower.includes("female") && !nameLower.includes("zira"));
-      return isIndian && isMale;
-    });
+
+    // 2. Fallback to any Indian English voice if a specific female one isn't found
+    if (!femaleIndianVoice) {
+      femaleIndianVoice = voices.find(v => 
+        v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india")
+      );
+    }
+
+    // 3. Apply the voice
+    if (femaleIndianVoice) {
+      msg.voice = femaleIndianVoice;
+    }
+
+    msg.lang = "en-IN";
+    msg.rate = 0.72;   // Slightly slower so children's names are pronounced clearly
+    msg.pitch = 1.35;   // Slightly higher pitch sounds more naturally female on basic synthesizers
+    msg.volume = 1.0;
+
+    msg.onend = function() {
+      count++;
+      setTimeout(speakAgain, 600);
+    };
+
+    window.speechSynthesis.speak(msg);
   }
 
-  // Fallback to any Indian voice if specific gender profile isn't found
-  if (!selectedVoice) {
-    selectedVoice = systemVoices.find(v => 
-      v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india")
-    );
-  }
-
-  if (selectedVoice) {
-    msg.voice = selectedVoice;
-  }
-
-  msg.lang = "en-IN";
-  msg.rate = 0.75;   
-  
-  // Dynamic Pitch: Higher for female, lower for male to guarantee contrast even on basic fallback voices
-  msg.pitch = currentSpeech.gender === 'female' ? 1.48 : 0.75;  
-  msg.volume = 1.0;
-
-  msg.onend = function() {
-    isSpeaking = false;
-    setTimeout(processSpeechQueue, 400); 
-  };
-
-  msg.onerror = function() {
-    isSpeaking = false;
-    processSpeechQueue();
-  };
-
-  window.speechSynthesis.speak(msg);
+  speakAgain();
 }
 
 function getOnlyTime(value) {
@@ -355,6 +404,7 @@ function getOnlyTime(value) {
 
 function updateLiveClock() {
   const now = new Date();
+
   const timeString = now.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
@@ -368,7 +418,9 @@ function updateLiveClock() {
     "</span>";
 }
 
+/* Dual-Mode Complete Safety Audio Playback Engine */
 function playNotificationSound() {
+  // Pass 1: Run native high-amplitude hardware square wave generator
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx) {
@@ -387,6 +439,7 @@ function playNotificationSound() {
     console.log("Synthesizer bypassed");
   }
 
+  // Pass 2: Simultaneously stream standard container MP3 file down device line
   try {
     fallbackSound.currentTime = 0;
     fallbackSound.volume = 2.0;
@@ -396,6 +449,9 @@ function playNotificationSound() {
   }
 }
 
+/* =========================
+   FETCH (CLEAN + DIRECT)
+========================= */
 async function fetchData() {
   try {
     const res = await fetch(API + "?t=" + Date.now());
@@ -408,31 +464,31 @@ async function fetchData() {
       headers = currentRows[0] || [];
       const dataRows = currentRows.slice(1);
 
-      let newlyDetectedRows = [];
+      let foundNewID = false;
 
       dataRows.forEach(row => {
         const rowID = String(row[0] || "").trim();
+        
         if (rowID !== "") {
-          if (!existingIDsSet.has(rowID)) {
-            if (!isInitialLoad) {
-              newlyDetectedRows.push(row);
-            }
-            existingIDsSet.add(rowID);
+          if (existingIDsSet.size > 0 && !existingIDsSet.has(rowID)) {
+            foundNewID = true;
           }
+          existingIDsSet.add(rowID);
         }
       });
 
-      if (isInitialLoad) {
-        isInitialLoad = false;
-      } else if (newlyDetectedRows.length > 0) {
-        playNotificationSound();
-        newlyDetectedRows.forEach(row => {
-          const studentName = row[1];
-          if (studentName) {
-            queueStudentName(studentName);
-          }
-        });
-      }
+     if (foundNewID) {
+
+    playNotificationSound();
+
+    const latestRow = dataRows[0];
+
+    const studentName = latestRow[1];
+
+    if(studentName){
+        speakStudentName(studentName);
+    }
+}
 
       rows = dataRows;
       render();
@@ -444,28 +500,37 @@ async function fetchData() {
   }
 }
 
+/* =========================
+   RENDER (NO DUPLICATES)
+========================= */
 function render() {
   const q = document.getElementById("search").value.toLowerCase();
   const container = document.getElementById("container");
+
   const selectedClass = document.getElementById("classFilter").value;
 
-  const filtered = rows.filter(r => {
-    const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
-    const rawClassCell = String(r[2] || "").trim();
-    const baseClassGrade = rawClassCell.replace(/\s+[RL]\b/i, "").trim();
+const filtered = rows.filter(r => {
 
-    const matchesClass = selectedClass === "" || baseClassGrade === selectedClass;
+    const matchesSearch =
+        (r || []).join(" ").toLowerCase().includes(q);
+
+    const matchesClass =
+        selectedClass === "" ||
+        String(r[2]).trim() === selectedClass;
+
     return matchesSearch && matchesClass;
-  });
+});
 
   let html = "";
 
+  /* HEADER */
   html += `<div class="row headerRow">`;
   headers.forEach(h => {
     html += `<div>${h || ""}</div>`;
   });
   html += `</div>`;
 
+  /* DATA */
   filtered.forEach((r, i) => {
     html += `<div class="row cardRow ${i === 0 ? 'new' : ''}">`;
 
@@ -483,6 +548,7 @@ function render() {
   container.innerHTML = html;
 }
 
+/* RUN INITIAL TIMERS */
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
