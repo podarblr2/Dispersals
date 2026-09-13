@@ -231,8 +231,8 @@
 <div class="container" id="container"></div>
 
 <script>
-const SUPABASE_URL = 'https://mlnxbihcxytkieeyjmvm.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
+const SUPABASE_URL = 'https://mlnxbihcuitkiseyjmvm.supabase.co';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const fallbackSound = new Audio("https://google.com");
@@ -240,7 +240,7 @@ const fallbackSound = new Audio("https://google.com");
 let rows = [];
 let headers = ["ID", "Student Name", "Class & Sec", "Status", "Time"];
 let lastConnectionOK = false;
-let existingIDsSet = new Set(); 
+let existingIDsSet = new Set();
 
 function unlockAudio() {
   document.getElementById("audioGate").style.display = "none";
@@ -271,7 +271,7 @@ function speakStudentName(name) {
     });
 
     if (!femaleIndianVoice) {
-      femaleIndianVoice = voices.find(v => v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india"));
+      femaleIndianVoice = voices.find(v => v.lang.toLowerCase().startsWith("en-in") || v.name.toLowerCase().includes("india"));
     }
 
     if (femaleIndianVoice) msg.voice = femaleIndianVoice;
@@ -294,19 +294,29 @@ function speakStudentName(name) {
 function getOnlyTime(value) {
   if (!value) return "";
   const d = new Date(value);
-  if (isNaN(d)) return value;
-  return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+  if (isNaN(d.getTime())) return value;
+  return d.toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
 }
 
 function updateLiveClock() {
   const now = new Date();
-  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  const timeString = now.toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
+  });
 
   document.getElementById("liveClock").innerHTML =
-    "🕒 " + timeString + 
-    ' <span id="connectionStatus">' +
-    (lastConnectionOK ? "🟢 Connected" : "🔴 Disconnected") +
-    "</span>";
+    "🕒 " + timeString + ' <span id="connectionStatus">' +
+    (lastConnectionOK ? "🟢 Connected" : "🔴 Disconnected") + "</span>";
 }
 
 function playNotificationSound() {
@@ -316,7 +326,7 @@ function playNotificationSound() {
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = 'square';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
       gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
       osc.connect(gain);
@@ -341,14 +351,7 @@ async function fetchData() {
   try {
     const { data, error } = await supabaseClient
       .from('arrivals')
-      .select(`
-        s_id,
-        arrival_time,
-        master_data (
-          name,
-          class_sec
-        )
-      `)
+      .select('s_id, name, class_section, mode, arrival_time')
       .order('arrival_time', { ascending: false })
       .limit(50);
 
@@ -358,15 +361,14 @@ async function fetchData() {
     updateLiveClock();
 
     const dataRows = (data || []).map(item => [
-      item.s_id || '',
-      item.master_data?.name || 'Unknown Student',
-      item.master_data?.class_sec || '',
-      'Dispersed',
-      item.arrival_time || ''
+      item.s_id || "",
+      item.name || "Unknown Student",
+      item.class_section || "",
+      "Dispersed",
+      item.arrival_time || ""
     ]);
 
     let foundNewID = false;
-
     dataRows.forEach(row => {
       const rowID = String(row[0] || "").trim();
       if (rowID !== "") {
@@ -380,7 +382,7 @@ async function fetchData() {
     if (foundNewID) {
       playNotificationSound();
       const latestRow = dataRows[0];
-      const studentName = latestRow[1];
+      const studentName = latestRow ? latestRow[1] : "";
       if (studentName) {
         speakStudentName(studentName);
       }
@@ -406,9 +408,7 @@ function render() {
     return matchesSearch && matchesClass;
   });
 
-  let html = "";
-
-  html += `<div class="row headerRow">`;
+  let html = `<div class="row headerRow">`;
   headers.forEach(h => {
     html += `<div>${h || ""}</div>`;
   });
