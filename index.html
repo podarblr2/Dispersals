@@ -199,29 +199,21 @@
     <div class="live-clock" id="liveClock">🕒 --:--:-- -- <span id="connectionStatus">🟡 Checking...</span></div>
     <div class="controls">
       <select id="classFilter" onchange="render()">
-        <option value="">All Classes</option>
-        <option>I - R</option>
-        <option>I - L</option>
-        <option>II - R</option>
-        <option>II - L</option>
-        <option>III - R</option>
-        <option>III - L</option>
-        <option>IV - R</option>
-        <option>IV - L</option>
-        <option>V - R</option>
-        <option>V - L</option>
-        <option>VI - R</option>
-        <option>VI - L</option>
-        <option>VII - R</option>
-        <option>VII - L</option>
-        <option>VIII - R</option>
-        <option>VIII - L</option>
-        <option>IX - R</option>
-        <option>IX - L</option>
-        <option>X - R</option>
-        <option>X - L</option>
-        <option>XI</option>
-        <option>XII</option>
+   <option value="">All Classes</option>
+  <option value="I">I</option>
+  <option value="II">II</option>
+  <option value="III">III</option>
+  <option value="IV">IV</option>
+  <option value="V">V</option>
+  <option value="VI">VI</option>
+  <option value="VII">VII</option>
+  <option value="VIII">VIII</option>
+  <option value="IX">IX</option>
+  <option value="X">X</option>
+  <option value="XI">XI</option>
+  <option value="XII">XII</option>
+</select>
+
       </select>
       <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
     </div>
@@ -230,15 +222,16 @@
 
 <div class="container" id="container"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = 'https://mlnxbihcuitkiseyjmvm.supabase.co';
+const SUPABASE_URL = 'https://mlnxbihcxytkieeyjmvm.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const fallbackSound = new Audio("https://google.com");
 
 let rows = [];
-let headers = ["ID", "Student Name", "Class & Sec", "Status", "Time"];
+let headers = ["ID", "Student Name", "Class/Sec", "Mode", "Time"];
 let lastConnectionOK = false;
 let existingIDsSet = new Set();
 
@@ -349,11 +342,34 @@ function playNotificationSound() {
 
 async function fetchData() {
   try {
+    // Get current IST date: YYYY-MM-DD
+    const now = new Date();
+
+    const istDate = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(now);
+
+    // IST day boundaries converted to UTC ISO timestamps.
+    // This ensures ONLY today's Indian-time records are fetched.
+    const startOfISTDay = new Date(`${istDate}T00:00:00+05:30`);
+    const startOfNextISTDay = new Date(startOfISTDay.getTime() + 24 * 60 * 60 * 1000);
+
     const { data, error } = await supabaseClient
       .from('arrivals')
-      .select('s_id, name, class_section, mode, arrival_time')
+      .select(`
+        s_id,
+        name,
+        class_section,
+        mode,
+        arrival_time
+      `)
+      .gte('arrival_time', startOfISTDay.toISOString())
+      .lt('arrival_time', startOfNextISTDay.toISOString())
       .order('arrival_time', { ascending: false })
-      .limit(50);
+      .limit(350);
 
     if (error) throw error;
 
@@ -361,28 +377,33 @@ async function fetchData() {
     updateLiveClock();
 
     const dataRows = (data || []).map(item => [
-      item.s_id || "",
-      item.name || "Unknown Student",
-      item.class_section || "",
-      "Dispersed",
-      item.arrival_time || ""
+      item.s_id || '',
+      item.name || 'Unknown Student',
+      item.class_section || '',
+      item.mode || '',
+      item.arrival_time || ''
     ]);
 
     let foundNewID = false;
+
     dataRows.forEach(row => {
       const rowID = String(row[0] || "").trim();
+
       if (rowID !== "") {
         if (existingIDsSet.size > 0 && !existingIDsSet.has(rowID)) {
           foundNewID = true;
         }
+
         existingIDsSet.add(rowID);
       }
     });
 
     if (foundNewID) {
       playNotificationSound();
+
       const latestRow = dataRows[0];
-      const studentName = latestRow ? latestRow[1] : "";
+      const studentName = latestRow?.[1];
+
       if (studentName) {
         speakStudentName(studentName);
       }
@@ -390,6 +411,7 @@ async function fetchData() {
 
     rows = dataRows;
     render();
+
   } catch (err) {
     lastConnectionOK = false;
     updateLiveClock();
@@ -404,7 +426,14 @@ function render() {
 
   const filtered = rows.filter(r => {
     const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
-    const matchesClass = selectedClass === "" || String(r[2]).trim() === selectedClass;
+    const classSection = String(r[2] || "").trim();
+   const matchesClass =
+  selectedClass === "" ||
+  classSection === selectedClass ||
+  classSection.startsWith(selectedClass + " - ");
+
+
+
     return matchesSearch && matchesClass;
   });
 
