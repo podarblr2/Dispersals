@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Dispersals Live</title>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     body {
       margin: 0;
@@ -14,7 +14,6 @@
     body.light { background:#f1f5f9; color:black; }
     body.neon { background:#030712; color:#39ff14; }
 
-    /* Fix: Centers entry gate as full screen layer without altering flow */
     #audioGate {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -135,8 +134,8 @@
 
     body.light .new {
       background: #fef08a !important; 
-      box-shadow: 0 0 14px #eab308;   
-      border: 1px solid #facc15;     
+      box-shadow: 0 0 14px #eab308;    
+      border: 1px solid #facc15;      
       color: #000000 !important;      
     }
 
@@ -147,125 +146,48 @@
     }
 
     select {
-  padding:8px 12px;
-  border-radius:6px;
-  margin-right:8px;
-  font-size:16px;
-}
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-right: 8px;
+      font-size: 16px;
+    }
 
-body.dark select{
-    background:#111;
-    color:white;
-}
+    body.dark select { background: #111; color: white; }
+    body.light select { background: white; color: black; }
+    body.neon select { background: black; color: #39ff14; border: 1px solid #39ff14; }
 
-body.light select{
-    background:white;
-    color:black;
-}
+    @media (max-width: 900px) {
+      header { padding: 10px; }
+      .header-top { flex-direction: column; align-items: flex-start; }
+      .header-top div:first-child { font-size: 24px !important; }
+      .header-bottom { flex-direction: column; align-items: stretch; }
+      .controls { width: 100%; justify-content: flex-start; }
+      .controls input, .controls select { width: 100%; max-width: none; }
+      .row { grid-template-columns: 0.5fr 2fr 0.8fr 0.8fr 1fr; font-size: 20px; }
+      .headerRow { font-size: 22px; }
+      .cardRow { font-size: 20px; }
+    }
 
-body.neon select{
-    background:black;
-    color:#39ff14;
-    border:1px solid #39ff14;
-}
-
-
-    /* ==========================
-   ANDROID + LAPTOP RESPONSIVE
-========================== */
-
-@media (max-width: 900px) {
-
-  header {
-    padding: 10px;
-  }
-
-  .header-top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .header-top div:first-child {
-    font-size: 24px !important;
-  }
-
-  .header-bottom {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .controls {
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-  .controls input,
-  .controls select {
-    width: 100%;
-    max-width: none;
-  }
-
-  .row {
-    grid-template-columns:
-      0.5fr
-      2fr
-      0.8fr
-      0.8fr
-      1fr;
-
-    font-size: 20px;
-  }
-
-  .headerRow {
-    font-size: 22px;
-  }
-
-  .cardRow {
-    font-size: 20px;
-  }
-
-}
-
-
-@media (max-width: 600px) {
-
-  .row {
-    grid-template-columns:
-      0.4fr
-      1.8fr
-      0.8fr
-      0.8fr
-      1fr;
-
-    font-size: 16px;
-  }
-
-  .headerRow {
-    font-size: 17px;
-  }
-
-  .cardRow {
-    font-size: 17px;
-  }
-
-}
-    
+    @media (max-width: 600px) {
+      .row { grid-template-columns: 0.4fr 1.8fr 0.8fr 0.8fr 1fr; font-size: 16px; }
+      .headerRow { font-size: 17px; }
+      .cardRow { font-size: 17px; }
+    }
   </style>
 </head>
 
 <body class="light">
 
-<!-- Unlocks browser sound on screen startup -->
 <div id="audioGate">
   <img class="gate-logo" src="https://images.click.in/classifieds/images/163/30_03_2022_16_53_17_cdcfba6b7278a14ccc1a5bf505bfd512_w.png" alt="Podar Logo">
-  <div style="font-size: 28px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Portal </div>
+  <div style="font-size: 28px; font-weight: bold;"> Podar International School, Magadi Road - Dispersals Portal </div>
   <div style="font-size: 16px; margin-top: 10px; color: #9ca3af;"> Click the button below to</div>
   <button onclick="unlockAudio()">Proceed Dashboard</button>
 </div>
 
 <header>
   <div class="header-top">
-    <div style="font-size: 36px; font-weight: bold;">  Podar International School, Magadi Road - Dispersals Live </div>
+    <div style="font-size: 36px; font-weight: bold;"> Podar International School, Magadi Road - Dispersals Live </div>
     <div>
       <button onclick="setTheme('dark')">Dark</button>
       <button onclick="setTheme('light')">Light</button>
@@ -276,51 +198,50 @@ body.neon select{
   <div class="header-bottom">
     <div class="live-clock" id="liveClock">🕒 --:--:-- -- <span id="connectionStatus">🟡 Checking...</span></div>
     <div class="controls">
-  <select id="classFilter" onchange="render()">
-    <option value="">All Classes</option>
-    <option>I R</option>
-    <option>I L</option>
-    <option>II R</option>
-    <option>II L</option>
-    <option>III R</option>
-    <option>III L</option>
-    <option>IV R</option>
-    <option>IV L</option>
-    <option>V R</option>
-    <option>V L</option>
-    <option>VI R</option>
-    <option>VI L</option>
-    <option>VII R</option>
-    <option>VII L</option>
-    <option>VIII R</option>
-    <option>VIII L</option>
-    <option>IX R</option>
-    <option>IX L</option>
-    <option>X R</option>
-    <option>X L</option>
-    <option>XI</option>
-    <option>XII</option>
-  </select>
-  <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
-</div>
+      <select id="classFilter" onchange="render()">
+        <option value="">All Classes</option>
+        <option>I - R</option>
+        <option>I - L</option>
+        <option>II - R</option>
+        <option>II - L</option>
+        <option>III - R</option>
+        <option>III - L</option>
+        <option>IV - R</option>
+        <option>IV - L</option>
+        <option>V - R</option>
+        <option>V - L</option>
+        <option>VI - R</option>
+        <option>VI - L</option>
+        <option>VII - R</option>
+        <option>VII - L</option>
+        <option>VIII - R</option>
+        <option>VIII - L</option>
+        <option>IX - R</option>
+        <option>IX - L</option>
+        <option>X - R</option>
+        <option>X - L</option>
+        <option>XI</option>
+        <option>XII</option>
+      </select>
+      <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
+    </div>
   </div>
 </header>
 
 <div class="container" id="container"></div>
 
 <script>
+const SUPABASE_URL = 'https://mlnxbihcxytkieeyjmvm.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const API = "https://script.google.com/macros/s/AKfycbx5H1nE9qRgtuvNfEeJZ6GUqnFP9_59sLObLB1FrOZXryB5VwZoaA4EcKkzGE0JaX3f8A/exec";
-
-// Fallback high-compatibility media channel
 const fallbackSound = new Audio("https://google.com");
 
 let rows = [];
-let headers = [];
+let headers = ["ID", "Student Name", "Class & Sec", "Status", "Time"];
 let lastConnectionOK = false;
 let existingIDsSet = new Set(); 
 
-// Action to hide your startup entry gate when button is clicked
 function unlockAudio() {
   document.getElementById("audioGate").style.display = "none";
   playNotificationSound();
@@ -328,60 +249,36 @@ function unlockAudio() {
 
 function setTheme(t) {
   document.body.className = t;
-  playNotificationSound(); // Plays structural hardware sound verification pass
+  playNotificationSound();
 }
 
-
-  function speakStudentName(name) {
-  if (!("speechSynthesis" in window)) {
-    console.log("Speech not supported");
-    return;
-  }
-
-  // Cancel any ongoing speech to prevent overlapping queues
+function speakStudentName(name) {
+  if (!("speechSynthesis" in window)) return;
   window.speechSynthesis.cancel();
 
   let count = 0;
-
   function speakAgain() {
     if (count >= 2) return;
-
     const msg = new SpeechSynthesisUtterance(name);
     const voices = window.speechSynthesis.getVoices();
 
-    // 1. Search specifically for known Indian female voices
     let femaleIndianVoice = voices.find(v => {
       const nameLower = v.name.toLowerCase();
       const langLower = v.lang.toLowerCase();
-      
-      // Match Indian English or Hindi/Indian regional languages
       const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
-      
-      // Target known female voice names on Windows, macOS, and Android
-      const isFemale = nameLower.includes("heera") || 
-                       nameLower.includes("veena") || 
-                       nameLower.includes("priya") || 
-                       nameLower.includes("female") ||
-                       nameLower.includes("zira"); // fallback English female
-
+      const isFemale = nameLower.includes("heera") || nameLower.includes("veena") || nameLower.includes("priya") || nameLower.includes("female") || nameLower.includes("zira");
       return isIndian && isFemale;
     });
 
-    // 2. Fallback to any Indian English voice if a specific female one isn't found
     if (!femaleIndianVoice) {
-      femaleIndianVoice = voices.find(v => 
-        v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india")
-      );
+      femaleIndianVoice = voices.find(v => v.lang.startsWith("en-in") || v.name.toLowerCase().includes("india"));
     }
 
-    // 3. Apply the voice
-    if (femaleIndianVoice) {
-      msg.voice = femaleIndianVoice;
-    }
+    if (femaleIndianVoice) msg.voice = femaleIndianVoice;
 
     msg.lang = "en-IN";
-    msg.rate = 0.72;   // Slightly slower so children's names are pronounced clearly
-    msg.pitch = 1.35;   // Slightly higher pitch sounds more naturally female on basic synthesizers
+    msg.rate = 0.72;
+    msg.pitch = 1.35;
     msg.volume = 1.0;
 
     msg.onend = function() {
@@ -391,7 +288,6 @@ function setTheme(t) {
 
     window.speechSynthesis.speak(msg);
   }
-
   speakAgain();
 }
 
@@ -404,12 +300,7 @@ function getOnlyTime(value) {
 
 function updateLiveClock() {
   const now = new Date();
-
-  const timeString = now.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true
-  });
+  const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
 
   document.getElementById("liveClock").innerHTML =
     "🕒 " + timeString + 
@@ -418,9 +309,7 @@ function updateLiveClock() {
     "</span>";
 }
 
-/* Dual-Mode Complete Safety Audio Playback Engine */
 function playNotificationSound() {
-  // Pass 1: Run native high-amplitude hardware square wave generator
   try {
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     if (audioCtx) {
@@ -439,7 +328,6 @@ function playNotificationSound() {
     console.log("Synthesizer bypassed");
   }
 
-  // Pass 2: Simultaneously stream standard container MP3 file down device line
   try {
     fallbackSound.currentTime = 0;
     fallbackSound.volume = 2.0;
@@ -449,91 +337,85 @@ function playNotificationSound() {
   }
 }
 
-/* =========================
-   FETCH (CLEAN + DIRECT)
-========================= */
 async function fetchData() {
   try {
-    const res = await fetch(API + "?t=" + Date.now());
-    const json = await res.json();
+    const { data, error } = await supabaseClient
+      .from('arrivals')
+      .select(`
+        s_id,
+        arrival_time,
+        master_data (
+          name,
+          class_sec
+        )
+      `)
+      .order('arrival_time', { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+
     lastConnectionOK = true;
     updateLiveClock();
-    const currentRows = json.rows || [];
 
-    if (currentRows.length > 1) {
-      headers = currentRows[0] || [];
-      const dataRows = currentRows.slice(1);
+    const dataRows = (data || []).map(item => [
+      item.s_id || '',
+      item.master_data?.name || 'Unknown Student',
+      item.master_data?.class_sec || '',
+      'Dispersed',
+      item.arrival_time || ''
+    ]);
 
-      let foundNewID = false;
+    let foundNewID = false;
 
-      dataRows.forEach(row => {
-        const rowID = String(row[0] || "").trim();
-        
-        if (rowID !== "") {
-          if (existingIDsSet.size > 0 && !existingIDsSet.has(rowID)) {
-            foundNewID = true;
-          }
-          existingIDsSet.add(rowID);
+    dataRows.forEach(row => {
+      const rowID = String(row[0] || "").trim();
+      if (rowID !== "") {
+        if (existingIDsSet.size > 0 && !existingIDsSet.has(rowID)) {
+          foundNewID = true;
         }
-      });
+        existingIDsSet.add(rowID);
+      }
+    });
 
-     if (foundNewID) {
-
-    playNotificationSound();
-
-    const latestRow = dataRows[0];
-
-    const studentName = latestRow[1];
-
-    if(studentName){
+    if (foundNewID) {
+      playNotificationSound();
+      const latestRow = dataRows[0];
+      const studentName = latestRow[1];
+      if (studentName) {
         speakStudentName(studentName);
+      }
     }
-}
 
-      rows = dataRows;
-      render();
-    }
+    rows = dataRows;
+    render();
   } catch (err) {
     lastConnectionOK = false;
     updateLiveClock();
-    console.error("API ERROR:", err);
+    console.error("SUPABASE ERROR:", err);
   }
 }
 
-/* =========================
-   RENDER (NO DUPLICATES)
-========================= */
 function render() {
   const q = document.getElementById("search").value.toLowerCase();
   const container = document.getElementById("container");
-
   const selectedClass = document.getElementById("classFilter").value;
 
-const filtered = rows.filter(r => {
-
-    const matchesSearch =
-        (r || []).join(" ").toLowerCase().includes(q);
-
-    const matchesClass =
-        selectedClass === "" ||
-        String(r[2]).trim() === selectedClass;
-
+  const filtered = rows.filter(r => {
+    const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
+    const matchesClass = selectedClass === "" || String(r[2]).trim() === selectedClass;
     return matchesSearch && matchesClass;
-});
+  });
 
   let html = "";
 
-  /* HEADER */
   html += `<div class="row headerRow">`;
   headers.forEach(h => {
     html += `<div>${h || ""}</div>`;
   });
   html += `</div>`;
 
-  /* DATA */
   filtered.forEach((r, i) => {
     html += `<div class="row cardRow ${i === 0 ? 'new' : ''}">`;
-
     r.forEach((cell, idx) => {
       let value = cell;
       if (idx === r.length - 1) {
@@ -541,20 +423,17 @@ const filtered = rows.filter(r => {
       }
       html += `<div>${value || ""}</div>`;
     });
-
     html += `</div>`;
   });
 
   container.innerHTML = html;
 }
 
-/* RUN INITIAL TIMERS */
 updateLiveClock();
 setInterval(updateLiveClock, 1000);
 
 fetchData();
-setInterval(fetchData, 1200);
-
+setInterval(fetchData, 2000);
 </script>
 
 </body>
