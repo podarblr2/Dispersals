@@ -224,141 +224,177 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = 'https://mlnxbihcxytkieeyjmvm.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL='https://mlnxbihcxytkieeyjmvm.supabase.co';
+const SUPABASE_ANON_KEY='sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
+const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-const fallbackSound = new Audio("https://google.com");
+const fallbackSound=new Audio("https://google.com");
+let rows=[];
+const headers=["ID","Student Name","Class/Sec","Mode","Time"];
+let lastConnectionOK=false;
+let existingIDsSet=new Set();
+let initialDataLoaded=false;
+let currentISTDate="";
+const voiceQueue=[];
+let isVoicePlaying=false;
 
-let rows = [];
-let headers = ["ID", "Student Name", "Class/Sec", "Mode", "Time"];
-let lastConnectionOK = false;
-let existingIDsSet = new Set();
+function unlockAudio(){
+  const gate=document.getElementById("audioGate");
+  if(gate)gate.style.display="none";
+  playNotificationSound();
+  if("speechSynthesis" in window)window.speechSynthesis.getVoices();
+}
 
-function unlockAudio() {
-  document.getElementById("audioGate").style.display = "none";
+function setTheme(theme){
+  document.body.className=theme;
   playNotificationSound();
 }
 
-function setTheme(t) {
-  document.body.className = t;
-  playNotificationSound();
-}
-
-function speakStudentName(name) {
-  if (!("speechSynthesis" in window)) return;
-  window.speechSynthesis.cancel();
-
-  let count = 0;
-  function speakAgain() {
-    if (count >= 2) return;
-    const msg = new SpeechSynthesisUtterance(name);
-    const voices = window.speechSynthesis.getVoices();
-
-    let femaleIndianVoice = voices.find(v => {
-      const nameLower = v.name.toLowerCase();
-      const langLower = v.lang.toLowerCase();
-      const isIndian = langLower.startsWith("en-in") || langLower.startsWith("hi-in") || nameLower.includes("india");
-      const isFemale = nameLower.includes("heera") || nameLower.includes("veena") || nameLower.includes("priya") || nameLower.includes("female") || nameLower.includes("zira");
-      return isIndian && isFemale;
+function getIndianVoice(){
+  if(!("speechSynthesis" in window))return null;
+  const voices=window.speechSynthesis.getVoices();
+  let voice=voices.find(v=>{
+    const n=String(v.name||"").toLowerCase();
+    const l=String(v.lang||"").toLowerCase();
+    const indian=l.startsWith("en-in")||l.startsWith("hi-in")||n.includes("india");
+    const female=n.includes("heera")||n.includes("veena")||n.includes("priya")||n.includes("female")||n.includes("zira");
+    return indian&&female;
+  });
+  if(!voice){
+    voice=voices.find(v=>{
+      const n=String(v.name||"").toLowerCase();
+      const l=String(v.lang||"").toLowerCase();
+      return l.startsWith("en-in")||l.startsWith("hi-in")||n.includes("india");
     });
-
-    if (!femaleIndianVoice) {
-      femaleIndianVoice = voices.find(v => v.lang.toLowerCase().startsWith("en-in") || v.name.toLowerCase().includes("india"));
-    }
-
-    if (femaleIndianVoice) msg.voice = femaleIndianVoice;
-
-    msg.lang = "en-IN";
-    msg.rate = 0.72;
-    msg.pitch = 1.35;
-    msg.volume = 1.0;
-
-    msg.onend = function() {
-      count++;
-      setTimeout(speakAgain, 600);
-    };
-
-    window.speechSynthesis.speak(msg);
   }
-  speakAgain();
+  return voice||null;
 }
 
-function getOnlyTime(value) {
-  if (!value) return "";
-  const d = new Date(value);
-  if (isNaN(d.getTime())) return value;
-  return d.toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
+function speakStudentName(name){
+  if(!("speechSynthesis" in window))return;
+  name=String(name||"").trim();
+  if(!name)return;
+  voiceQueue.push(name);
+  processVoiceQueue();
+}
+
+function processVoiceQueue(){
+  if(!("speechSynthesis" in window)){
+    voiceQueue.length=0;
+    return;
+  }
+  if(isVoicePlaying||voiceQueue.length===0)return;
+
+  const name=voiceQueue.shift();
+  isVoicePlaying=true;
+
+  const msg=new SpeechSynthesisUtterance(name);
+  const voice=getIndianVoice();
+
+  if(voice)msg.voice=voice;
+
+  msg.lang="en-IN";
+  msg.rate=0.72;
+  msg.pitch=1.35;
+  msg.volume=1;
+
+  msg.onend=()=>{
+    isVoicePlaying=false;
+    setTimeout(processVoiceQueue,250);
+  };
+
+  msg.onerror=()=>{
+    isVoicePlaying=false;
+    setTimeout(processVoiceQueue,100);
+  };
+
+  window.speechSynthesis.speak(msg);
+}
+
+function getOnlyTime(value){
+  if(!value)return"";
+  const d=new Date(value);
+  if(isNaN(d.getTime()))return value;
+  return d.toLocaleTimeString("en-IN",{
+    timeZone:"Asia/Kolkata",
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit",
+    hour12:true
   });
 }
 
-function updateLiveClock() {
-  const now = new Date();
-  const timeString = now.toLocaleTimeString("en-IN", {
-    timeZone: "Asia/Kolkata",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: true
-  });
-
-  document.getElementById("liveClock").innerHTML =
-    "🕒 " + timeString + ' <span id="connectionStatus">' +
-    (lastConnectionOK ? "🟢 Connected" : "🔴 Disconnected") + "</span>";
+function getISTDate(){
+  return new Intl.DateTimeFormat("en-CA",{
+    timeZone:"Asia/Kolkata",
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit"
+  }).format(new Date());
 }
 
-function playNotificationSound() {
-  try {
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx) {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-      gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+function updateLiveClock(){
+  const clock=document.getElementById("liveClock");
+  if(!clock)return;
+
+  const time=new Date().toLocaleTimeString("en-IN",{
+    timeZone:"Asia/Kolkata",
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit",
+    hour12:true
+  });
+
+  clock.innerHTML="🕒 "+time+
+    ' <span id="connectionStatus">'+
+    (lastConnectionOK?"🟢 Connected":"🔴 Disconnected")+
+    "</span>";
+}
+
+function playNotificationSound(){
+  try{
+    const AudioContext=window.AudioContext||window.webkitAudioContext;
+    if(AudioContext){
+      const ctx=new AudioContext();
+      const osc=ctx.createOscillator();
+      const gain=ctx.createGain();
+
+      osc.type="square";
+      osc.frequency.setValueAtTime(880,ctx.currentTime);
+      gain.gain.setValueAtTime(0.2,ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+
       osc.connect(gain);
-      gain.connect(audioCtx.destination);
+      gain.connect(ctx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.3);
+      osc.stop(ctx.currentTime+0.3);
     }
-  } catch (e) {
-    console.log("Synthesizer bypassed");
-  }
+  }catch(e){}
 
-  try {
-    fallbackSound.currentTime = 0;
-    fallbackSound.volume = 2.0;
-    fallbackSound.play();
-  } catch (e) {
-    console.log("Media channel exception bypass");
-  }
+  try{
+    fallbackSound.currentTime=0;
+    fallbackSound.volume=1;
+    const p=fallbackSound.play();
+    if(p)p.catch(()=>{});
+  }catch(e){}
 }
 
-async function fetchData() {
-  try {
-    // Get current IST date: YYYY-MM-DD
-    const now = new Date();
+async function fetchData(){
+  try{
+    const istDate=getISTDate();
 
-    const istDate = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Asia/Kolkata",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }).format(now);
+    if(currentISTDate!==istDate){
+      currentISTDate=istDate;
+      existingIDsSet.clear();
+      initialDataLoaded=false;
+      voiceQueue.length=0;
+    }
 
-    // IST day boundaries converted to UTC ISO timestamps.
-    // This ensures ONLY today's Indian-time records are fetched.
-    const startOfISTDay = new Date(`${istDate}T00:00:00+05:30`);
-    const startOfNextISTDay = new Date(startOfISTDay.getTime() + 24 * 60 * 60 * 1000);
+    const startOfISTDay=new Date(`${istDate}T00:00:00+05:30`);
+    const startOfNextISTDay=new Date(startOfISTDay.getTime()+86400000);
 
-    const { data, error } = await supabaseClient
-      .from('arrivals')
+    const{data,error}=await supabaseClient
+      .from("arrivals")
       .select(`
         s_id,
         name,
@@ -366,103 +402,112 @@ async function fetchData() {
         mode,
         arrival_time
       `)
-      .gte('arrival_time', startOfISTDay.toISOString())
-      .lt('arrival_time', startOfNextISTDay.toISOString())
-      .order('arrival_time', { ascending: false })
+      .gte("arrival_time",startOfISTDay.toISOString())
+      .lt("arrival_time",startOfNextISTDay.toISOString())
+      .order("arrival_time",{ascending:false})
       .limit(350);
 
-    if (error) throw error;
+    if(error)throw error;
 
-    lastConnectionOK = true;
+    lastConnectionOK=true;
     updateLiveClock();
 
-    const dataRows = (data || []).map(item => [
-      item.s_id || '',
-      item.name || 'Unknown Student',
-      item.class_section || '',
-      item.mode || '',
-      item.arrival_time || ''
+    const dataRows=(data||[]).map(item=>[
+      item.s_id||"",
+      item.name||"Unknown Student",
+      item.class_section||"",
+      item.mode||"",
+      item.arrival_time||""
     ]);
 
-    let foundNewID = false;
+    const newStudents=[];
 
-    dataRows.forEach(row => {
-      const rowID = String(row[0] || "").trim();
+    dataRows.forEach(row=>{
+      const id=String(row[0]||"").trim();
+      const name=String(row[1]||"").trim();
 
-      if (rowID !== "") {
-        if (existingIDsSet.size > 0 && !existingIDsSet.has(rowID)) {
-          foundNewID = true;
-        }
+      if(!id)return;
 
-        existingIDsSet.add(rowID);
+      if(!initialDataLoaded){
+        existingIDsSet.add(id);
+      }else if(!existingIDsSet.has(id)){
+        existingIDsSet.add(id);
+        if(name)newStudents.push(name);
       }
     });
 
-    if (foundNewID) {
+    initialDataLoaded=true;
+
+    if(newStudents.length){
       playNotificationSound();
-
-      const latestRow = dataRows[0];
-      const studentName = latestRow?.[1];
-
-      if (studentName) {
-        speakStudentName(studentName);
-      }
+      newStudents.reverse().forEach(name=>speakStudentName(name));
     }
 
-    rows = dataRows;
+    rows=dataRows;
     render();
 
-  } catch (err) {
-    lastConnectionOK = false;
+  }catch(err){
+    lastConnectionOK=false;
     updateLiveClock();
-    console.error("SUPABASE ERROR:", err);
+    console.error("SUPABASE ERROR:",err);
   }
 }
 
-function render() {
-  const q = document.getElementById("search").value.toLowerCase();
-  const container = document.getElementById("container");
-  const selectedClass = document.getElementById("classFilter").value;
+function render(){
+  const search=document.getElementById("search");
+  const classFilter=document.getElementById("classFilter");
+  const container=document.getElementById("container");
 
-  const filtered = rows.filter(r => {
-    const matchesSearch = (r || []).join(" ").toLowerCase().includes(q);
-    const classSection = String(r[2] || "").trim();
-   const matchesClass =
-  selectedClass === "" ||
-  classSection === selectedClass ||
-  classSection.startsWith(selectedClass + " - ");
+  if(!search||!classFilter||!container)return;
 
+  const q=search.value.toLowerCase().trim();
+  const selectedClass=classFilter.value;
 
+  const filtered=rows.filter(r=>{
+    const matchesSearch=(r||[]).join(" ").toLowerCase().includes(q);
+    const classSection=String(r[2]||"").trim();
 
-    return matchesSearch && matchesClass;
+    const matchesClass=
+      selectedClass===""||
+      classSection===selectedClass||
+      classSection.startsWith(selectedClass+" - ");
+
+    return matchesSearch&&matchesClass;
   });
 
-  let html = `<div class="row headerRow">`;
-  headers.forEach(h => {
-    html += `<div>${h || ""}</div>`;
-  });
-  html += `</div>`;
+  let html='<div class="row headerRow">';
 
-  filtered.forEach((r, i) => {
-    html += `<div class="row cardRow ${i === 0 ? 'new' : ''}">`;
-    r.forEach((cell, idx) => {
-      let value = cell;
-      if (idx === r.length - 1) {
-        value = getOnlyTime(cell);
-      }
-      html += `<div>${value || ""}</div>`;
+  headers.forEach(h=>{
+    html+=`<div>${h||""}</div>`;
+  });
+
+  html+="</div>";
+
+  filtered.forEach((r,i)=>{
+    html+=`<div class="row cardRow ${i===0?"new":""}">`;
+
+    r.forEach((cell,idx)=>{
+      let value=cell;
+      if(idx===r.length-1)value=getOnlyTime(cell);
+      html+=`<div>${value||""}</div>`;
     });
-    html += `</div>`;
+
+    html+="</div>";
   });
 
-  container.innerHTML = html;
+  container.innerHTML=html;
 }
 
 updateLiveClock();
-setInterval(updateLiveClock, 1000);
-
+setInterval(updateLiveClock,1000);
 fetchData();
-setInterval(fetchData, 2000);
+setInterval(fetchData,2000);
+
+if("speechSynthesis" in window){
+  window.speechSynthesis.onvoiceschanged=()=>{
+    window.speechSynthesis.getVoices();
+  };
+}
 </script>
 
 </body>
