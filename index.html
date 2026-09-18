@@ -2,7 +2,9 @@
 <html>
 <head>
   <title>Dispersals Live</title>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
     body {
       margin: 0;
@@ -10,13 +12,16 @@
       transition: 0.3s;
     }
 
-    body.dark { background:black; color:white; }
-    body.light { background:#f1f5f9; color:black; }
-    body.neon { background:#030712; color:#39ff14; }
+    body.dark { background: black; color: white; }
+    body.light { background: #f1f5f9; color: black; }
+    body.neon { background: #030712; color: #39ff14; }
 
     #audioGate {
       position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       background: #0f172a;
       z-index: 99999;
       display: flex;
@@ -26,7 +31,7 @@
       color: white;
       text-align: center;
     }
-    
+
     .gate-logo {
       max-width: 600px;
       height: auto;
@@ -73,13 +78,18 @@
     .live-clock {
       font-size: 20px;
       font-weight: bold;
-      color: #9ca3af; 
-      font-family: monospace; 
+      color: #9ca3af;
+      font-family: monospace;
     }
 
-    body.neon .live-clock { color: #39ff14; }
+    body.neon .live-clock {
+      color: #39ff14;
+    }
 
-    .controls { display: flex; justify-content: flex-end; }
+    .controls {
+      display: flex;
+      justify-content: flex-end;
+    }
 
     input {
       padding: 8px 12px;
@@ -89,19 +99,32 @@
       outline: none;
     }
 
-    body.light input { border: 1px solid rgba(0, 0, 0, 0.15); background: white; color: black; }
-    body.dark input { background: rgba(255,255,255,0.05); color: white; }
-    body.neon input { background: black; border: 1px solid #39ff14; color: #39ff14; }
+    body.light input {
+      border: 1px solid rgba(0, 0, 0, 0.15);
+      background: white;
+      color: black;
+    }
+
+    body.dark input {
+      background: rgba(255,255,255,0.05);
+      color: white;
+    }
+
+    body.neon input {
+      background: black;
+      border: 1px solid #39ff14;
+      color: #39ff14;
+    }
 
     .container {
-      height: calc(100vh - 150px); 
+      height: calc(100vh - 150px);
       overflow-y: auto;
       padding: 10px;
     }
 
     .row {
       display: grid;
-      grid-template-columns: 0.6fr 2fr 0.8fr 0.6fr 1fr; 
+      grid-template-columns: 0.6fr 2fr 0.8fr 0.6fr 1fr;
       gap: 4px;
       padding: 8px;
       align-items: center;
@@ -125,18 +148,20 @@
       background: rgba(255,255,255,0.05);
     }
 
-    body.light .cardRow { background: rgba(0,0,0,0.03); }
+    body.light .cardRow {
+      background: rgba(0,0,0,0.03);
+    }
 
     .new {
-      background: rgba(250, 204, 21, 0.35) !important; 
-      box-shadow: 0 0 15px #facc15; 
+      background: rgba(250, 204, 21, 0.35) !important;
+      box-shadow: 0 0 15px #facc15;
     }
 
     body.light .new {
-      background: #fef08a !important; 
-      box-shadow: 0 0 14px #eab308;    
-      border: 1px solid #facc15;      
-      color: #000000 !important;      
+      background: #fef08a !important;
+      box-shadow: 0 0 14px #eab308;
+      border: 1px solid #facc15;
+      color: #000000 !important;
     }
 
     button {
@@ -152,26 +177,79 @@
       font-size: 16px;
     }
 
-    body.dark select { background: #111; color: white; }
-    body.light select { background: white; color: black; }
-    body.neon select { background: black; color: #39ff14; border: 1px solid #39ff14; }
+    body.dark select {
+      background: #111;
+      color: white;
+    }
+
+    body.light select {
+      background: white;
+      color: black;
+    }
+
+    body.neon select {
+      background: black;
+      color: #39ff14;
+      border: 1px solid #39ff14;
+    }
 
     @media (max-width: 900px) {
-      header { padding: 10px; }
-      .header-top { flex-direction: column; align-items: flex-start; }
-      .header-top div:first-child { font-size: 24px !important; }
-      .header-bottom { flex-direction: column; align-items: stretch; }
-      .controls { width: 100%; justify-content: flex-start; }
-      .controls input, .controls select { width: 100%; max-width: none; }
-      .row { grid-template-columns: 0.5fr 2fr 0.8fr 0.8fr 1fr; font-size: 20px; }
-      .headerRow { font-size: 22px; }
-      .cardRow { font-size: 20px; }
+      header {
+        padding: 10px;
+      }
+
+      .header-top {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .header-top div:first-child {
+        font-size: 24px !important;
+      }
+
+      .header-bottom {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .controls {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .controls input,
+      .controls select {
+        width: 100%;
+        max-width: none;
+      }
+
+      .row {
+        grid-template-columns: 0.5fr 2fr 0.8fr 0.8fr 1fr;
+        font-size: 20px;
+      }
+
+      .headerRow {
+        font-size: 22px;
+      }
+
+      .cardRow {
+        font-size: 20px;
+      }
     }
 
     @media (max-width: 600px) {
-      .row { grid-template-columns: 0.4fr 1.8fr 0.8fr 0.8fr 1fr; font-size: 16px; }
-      .headerRow { font-size: 17px; }
-      .cardRow { font-size: 17px; }
+      .row {
+        grid-template-columns: 0.4fr 1.8fr 0.8fr 0.8fr 1fr;
+        font-size: 16px;
+      }
+
+      .headerRow {
+        font-size: 17px;
+      }
+
+      .cardRow {
+        font-size: 17px;
+      }
     }
   </style>
 </head>
@@ -179,221 +257,602 @@
 <body class="light">
 
 <div id="audioGate">
-  <img class="gate-logo" src="https://images.click.in/classifieds/images/163/30_03_2022_16_53_17_cdcfba6b7278a14ccc1a5bf505bfd512_w.png" alt="Podar Logo">
-  <div style="font-size: 28px; font-weight: bold;"> Podar International School, Magadi Road - Dispersals Portal </div>
-  <div style="font-size: 16px; margin-top: 10px; color: #9ca3af;"> Click the button below to</div>
+  <img
+    class="gate-logo"
+    src="https://images.click.in/classifieds/images/163/30_03_2022_16_53_17_cdcfba6b7278a14ccc1a5bf505bfd512_w.png"
+    alt="Podar Logo"
+  >
+
+  <div style="font-size: 28px; font-weight: bold;">
+    Podar International School, Magadi Road - Dispersals Portal
+  </div>
+
+  <div style="font-size: 16px; margin-top: 10px; color: #9ca3af;">
+    Click the button below to
+  </div>
+
   <button onclick="unlockAudio()">Proceed Dashboard</button>
 </div>
 
 <header>
   <div class="header-top">
-    <div style="font-size: 36px; font-weight: bold;"> Podar International School, Magadi Road - Dispersals Live </div>
+
+    <div style="font-size: 36px; font-weight: bold;">
+      Podar International School, Magadi Road - Dispersals Live
+    </div>
+
     <div>
       <button onclick="setTheme('dark')">Dark</button>
       <button onclick="setTheme('light')">Light</button>
       <button onclick="setTheme('neon')">Neon</button>
     </div>
+
   </div>
 
   <div class="header-bottom">
-    <div class="live-clock" id="liveClock">🕒 --:--:-- -- <span id="connectionStatus">🟡 Checking...</span></div>
-    <div class="controls">
-      <select id="classFilter" onchange="render()">
-   <option value="">All Classes</option>
-  <option value="I">I</option>
-  <option value="II">II</option>
-  <option value="III">III</option>
-  <option value="IV">IV</option>
-  <option value="V">V</option>
-  <option value="VI">VI</option>
-  <option value="VII">VII</option>
-  <option value="VIII">VIII</option>
-  <option value="IX">IX</option>
-  <option value="X">X</option>
-  <option value="XI">XI</option>
-  <option value="XII">XII</option>
-</select>
 
+    <div class="live-clock" id="liveClock">
+      🕒 --:--:-- --
+      <span id="connectionStatus">🟡 Checking...</span>
+    </div>
+
+    <div class="controls">
+
+      <select id="classFilter" onchange="render()">
+        <option value="">All Classes</option>
+        <option value="I">I</option>
+        <option value="II">II</option>
+        <option value="III">III</option>
+        <option value="IV">IV</option>
+        <option value="V">V</option>
+        <option value="VI">VI</option>
+        <option value="VII">VII</option>
+        <option value="VIII">VIII</option>
+        <option value="IX">IX</option>
+        <option value="X">X</option>
+        <option value="XI">XI</option>
+        <option value="XII">XII</option>
       </select>
-      <input id="search" placeholder="🔎 Search..." onkeyup="render()" />
+
+      <input
+        id="search"
+        placeholder="🔎 Search..."
+        onkeyup="render()"
+      >
+
     </div>
   </div>
 </header>
 
 <div class="container" id="container"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL='https://mlnxbihcxytkieeyjmvm.supabase.co';
-const SUPABASE_ANON_KEY='sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
-const supabaseClient=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const SUPABASE_URL = 'https://mlnxbihcxytkieeyjmvm.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_5Anmt0xqsvygyHTrZBGwjw_POSTpqr2';
 
-const fallbackSound=new Audio("https://google.com");
-let rows=[];
-const headers=["ID","Student Name","Class/Sec","Mode","Time"];
-let lastConnectionOK=false;
-let existingIDsSet=new Set();
-let initialDataLoaded=false;
-let currentISTDate="";
-const voiceQueue=[];
-let isVoicePlaying=false;
+const supabaseClient =
+  supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function unlockAudio(){
-  const gate=document.getElementById("audioGate");
-  if(gate)gate.style.display="none";
-  playNotificationSound();
-  if("speechSynthesis" in window)window.speechSynthesis.getVoices();
+const fallbackSound = new Audio("https://google.com");
+
+let rows = [];
+
+const headers = [
+  "ID",
+  "Student Name",
+  "Class/Sec",
+  "Mode",
+  "Time"
+];
+
+let lastConnectionOK = false;
+let existingIDsSet = new Set();
+let initialDataLoaded = false;
+let currentISTDate = "";
+
+const voiceQueue = [];
+let isVoicePlaying = false;
+
+
+/* ============================================================
+   PARENT ANNOUNCEMENT
+   ============================================================ */
+
+const parentAnnouncement =
+"Dear Parents! We warmly invite you & the Grandparents!! for our Grandparents-Day celebrations & Culminating event tomorrow, Saturday 10'O clock!. Also a quick update! To make daily pick-up's smooth and hassle-free, please download & install our App, once registered, you can skip daily scanning. Thankyou!";
+
+const PARENT_ANNOUNCEMENT_INTERVAL = 50000;
+
+let parentAnnouncementRequested = false;
+let parentAnnouncementTimer = null;
+let parentAnnouncementPlaying = false;
+
+
+/* ============================================================
+   WAKE LOCK
+   ============================================================ */
+
+let wakeLock = null;
+
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator)) {
+    return;
+  }
+
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+
+    wakeLock.addEventListener("release", () => {
+      wakeLock = null;
+    });
+
+  } catch (err) {
+    console.warn("Wake Lock unavailable:", err);
+  }
 }
 
-function setTheme(theme){
-  document.body.className=theme;
+async function reacquireWakeLock() {
+  if (document.visibilityState !== "visible") {
+    return;
+  }
+
+  if (!("wakeLock" in navigator)) {
+    return;
+  }
+
+  if (wakeLock) {
+    return;
+  }
+
+  await requestWakeLock();
+}
+
+
+/* ============================================================
+   AUDIO GATE
+   ============================================================ */
+
+function unlockAudio() {
+  const gate = document.getElementById("audioGate");
+
+  if (gate) {
+    gate.style.display = "none";
+  }
+
+  playNotificationSound();
+
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.getVoices();
+  }
+
+  requestWakeLock();
+
+  startParentAnnouncementTimer();
+}
+
+
+/* ============================================================
+   THEME
+   ============================================================ */
+
+function setTheme(theme) {
+  document.body.className = theme;
   playNotificationSound();
 }
 
-function getIndianVoice(){
-  if(!("speechSynthesis" in window))return null;
-  const voices=window.speechSynthesis.getVoices();
-  let voice=voices.find(v=>{
-    const n=String(v.name||"").toLowerCase();
-    const l=String(v.lang||"").toLowerCase();
-    const indian=l.startsWith("en-in")||l.startsWith("hi-in")||n.includes("india");
-    const female=n.includes("heera")||n.includes("veena")||n.includes("priya")||n.includes("female")||n.includes("zira");
-    return indian&&female;
+
+/* ============================================================
+   VOICE SELECTION
+   ============================================================ */
+
+function getIndianVoice() {
+  if (!("speechSynthesis" in window)) {
+    return null;
+  }
+
+  const voices = window.speechSynthesis.getVoices();
+
+  let voice = voices.find(v => {
+    const n = String(v.name || "").toLowerCase();
+    const l = String(v.lang || "").toLowerCase();
+
+    const indian =
+      l.startsWith("en-in") ||
+      l.startsWith("hi-in") ||
+      n.includes("india");
+
+    const female =
+      n.includes("heera") ||
+      n.includes("veena") ||
+      n.includes("priya") ||
+      n.includes("female") ||
+      n.includes("zira");
+
+    return indian && female;
   });
-  if(!voice){
-    voice=voices.find(v=>{
-      const n=String(v.name||"").toLowerCase();
-      const l=String(v.lang||"").toLowerCase();
-      return l.startsWith("en-in")||l.startsWith("hi-in")||n.includes("india");
+
+  if (!voice) {
+    voice = voices.find(v => {
+      const n = String(v.name || "").toLowerCase();
+      const l = String(v.lang || "").toLowerCase();
+
+      return (
+        l.startsWith("en-in") ||
+        l.startsWith("hi-in") ||
+        n.includes("india")
+      );
     });
   }
-  return voice||null;
+
+  return voice || null;
 }
 
-function speakStudentName(name){
-  if(!("speechSynthesis" in window))return;
-  name=String(name||"").trim();
-  if(!name)return;
+
+/* ============================================================
+   STUDENT NAME QUEUE
+   ============================================================ */
+
+function speakStudentName(name) {
+  if (!("speechSynthesis" in window)) {
+    return;
+  }
+
+  name = String(name || "").trim();
+
+  if (!name) {
+    return;
+  }
+
   voiceQueue.push(name);
+
   processVoiceQueue();
 }
 
-function processVoiceQueue(){
-  if(!("speechSynthesis" in window)){
-    voiceQueue.length=0;
+
+/* ============================================================
+   PARENT ANNOUNCEMENT QUEUE CONTROL
+   ============================================================ */
+
+function requestParentAnnouncement() {
+  if (parentAnnouncementRequested || parentAnnouncementPlaying) {
     return;
   }
-  if(isVoicePlaying||voiceQueue.length===0)return;
 
-  const name=voiceQueue.shift();
-  isVoicePlaying=true;
+  parentAnnouncementRequested = true;
 
-  const msg=new SpeechSynthesisUtterance(name);
-  const voice=getIndianVoice();
+  processVoiceQueue();
+}
 
-  if(voice)msg.voice=voice;
 
-  msg.lang="en-IN";
-  msg.rate=0.72;
-  msg.pitch=1.35;
-  msg.volume=1;
+/* ============================================================
+   VOICE PROCESSOR
+   ============================================================ */
 
-  msg.onend=()=>{
-    isVoicePlaying=false;
-    setTimeout(processVoiceQueue,250);
+function processVoiceQueue() {
+  if (!("speechSynthesis" in window)) {
+    voiceQueue.length = 0;
+    parentAnnouncementRequested = false;
+    return;
+  }
+
+  if (isVoicePlaying) {
+    return;
+  }
+
+
+  /* ------------------------------------------------------------
+     Parent announcement has priority once the current speech
+     has finished.
+     ------------------------------------------------------------ */
+
+  if (parentAnnouncementRequested) {
+    parentAnnouncementRequested = false;
+    speakParentAnnouncement();
+    return;
+  }
+
+
+  /* ------------------------------------------------------------
+     Nothing to speak.
+     ------------------------------------------------------------ */
+
+  if (voiceQueue.length === 0) {
+    return;
+  }
+
+
+  /* ------------------------------------------------------------
+     Existing student-name logic
+     ------------------------------------------------------------ */
+
+  const name = voiceQueue.shift();
+
+  isVoicePlaying = true;
+
+  const msg = new SpeechSynthesisUtterance(name);
+  const voice = getIndianVoice();
+
+  if (voice) {
+    msg.voice = voice;
+  }
+
+  msg.lang = "en-IN";
+  msg.rate = 1.10;
+  msg.pitch = 1.35;
+  msg.volume = 1;
+
+  msg.onend = () => {
+    isVoicePlaying = false;
+
+    setTimeout(processVoiceQueue, 250);
   };
 
-  msg.onerror=()=>{
-    isVoicePlaying=false;
-    setTimeout(processVoiceQueue,100);
+  msg.onerror = () => {
+    isVoicePlaying = false;
+
+    setTimeout(processVoiceQueue, 100);
   };
 
   window.speechSynthesis.speak(msg);
 }
 
-function getOnlyTime(value){
-  if(!value)return"";
-  const d=new Date(value);
-  if(isNaN(d.getTime()))return value;
-  return d.toLocaleTimeString("en-IN",{
-    timeZone:"Asia/Kolkata",
-    hour:"2-digit",
-    minute:"2-digit",
-    second:"2-digit",
-    hour12:true
+
+/* ============================================================
+   PARENT ANNOUNCEMENT SPEECH
+   ============================================================ */
+
+function speakParentAnnouncement() {
+  if (!("speechSynthesis" in window)) {
+    parentAnnouncementRequested = false;
+    parentAnnouncementPlaying = false;
+
+    /*
+     * Even if speech synthesis is unavailable,
+     * maintain the exact 50-second interval.
+     */
+    scheduleNextParentAnnouncement();
+
+    return;
+  }
+
+  if (parentAnnouncementPlaying) {
+    return;
+  }
+
+  parentAnnouncementRequested = false;
+  parentAnnouncementPlaying = true;
+  isVoicePlaying = true;
+
+  const msg =
+    new SpeechSynthesisUtterance(parentAnnouncement);
+
+  const voice = getIndianVoice();
+
+  if (voice) {
+    msg.voice = voice;
+  }
+
+  msg.lang = "en-IN";
+  msg.rate = 1.15;
+  msg.pitch = 1.0;
+  msg.volume = 1;
+
+  msg.onend = () => {
+    parentAnnouncementPlaying = false;
+    isVoicePlaying = false;
+
+    /*
+     * The 50-second countdown starts AFTER
+     * the parent announcement has completely finished.
+     */
+    scheduleNextParentAnnouncement();
+
+    setTimeout(processVoiceQueue, 250);
+  };
+
+  msg.onerror = () => {
+    parentAnnouncementPlaying = false;
+    isVoicePlaying = false;
+
+    /*
+     * Keep the same rigid 50-second interval even
+     * if the speech engine reports an error.
+     */
+    scheduleNextParentAnnouncement();
+
+    setTimeout(processVoiceQueue, 100);
+  };
+
+  window.speechSynthesis.speak(msg);
+}
+
+
+/* ============================================================
+   PARENT ANNOUNCEMENT TIMER
+   ============================================================ */
+
+function scheduleNextParentAnnouncement() {
+
+  if (parentAnnouncementTimer !== null) {
+    clearTimeout(parentAnnouncementTimer);
+    parentAnnouncementTimer = null;
+  }
+
+  parentAnnouncementTimer = setTimeout(() => {
+
+    parentAnnouncementTimer = null;
+
+    requestParentAnnouncement();
+
+  }, PARENT_ANNOUNCEMENT_INTERVAL);
+}
+
+
+function startParentAnnouncementTimer() {
+
+  if (parentAnnouncementTimer !== null) {
+    return;
+  }
+
+  /*
+   * First announcement occurs exactly 50 seconds
+   * after Proceed Dashboard is clicked.
+   */
+  scheduleNextParentAnnouncement();
+}
+
+
+/* ============================================================
+   TIME DISPLAY
+   ============================================================ */
+
+function getOnlyTime(value) {
+  if (!value) {
+    return "";
+  }
+
+  const d = new Date(value);
+
+  if (isNaN(d.getTime())) {
+    return value;
+  }
+
+  return d.toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
   });
 }
 
-function getISTDate(){
-  return new Intl.DateTimeFormat("en-CA",{
-    timeZone:"Asia/Kolkata",
-    year:"numeric",
-    month:"2-digit",
-    day:"2-digit"
+
+function getISTDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
   }).format(new Date());
 }
 
-function updateLiveClock(){
-  const clock=document.getElementById("liveClock");
-  if(!clock)return;
 
-  const time=new Date().toLocaleTimeString("en-IN",{
-    timeZone:"Asia/Kolkata",
-    hour:"2-digit",
-    minute:"2-digit",
-    second:"2-digit",
-    hour12:true
+/* ============================================================
+   LIVE CLOCK
+   ============================================================ */
+
+function updateLiveClock() {
+  const clock = document.getElementById("liveClock");
+
+  if (!clock) {
+    return;
+  }
+
+  const time = new Date().toLocaleTimeString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true
   });
 
-  clock.innerHTML="🕒 "+time+
-    ' <span id="connectionStatus">'+
-    (lastConnectionOK?"🟢 Connected":"🔴 Disconnected")+
+  clock.innerHTML =
+    "🕒 " +
+    time +
+    ' <span id="connectionStatus">' +
+    (lastConnectionOK
+      ? "🟢 Connected"
+      : "🔴 Disconnected") +
     "</span>";
 }
 
-function playNotificationSound(){
-  try{
-    const AudioContext=window.AudioContext||window.webkitAudioContext;
-    if(AudioContext){
-      const ctx=new AudioContext();
-      const osc=ctx.createOscillator();
-      const gain=ctx.createGain();
 
-      osc.type="square";
-      osc.frequency.setValueAtTime(880,ctx.currentTime);
-      gain.gain.setValueAtTime(0.2,ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);
+/* ============================================================
+   NOTIFICATION SOUND
+   ============================================================ */
+
+function playNotificationSound() {
+  try {
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if (AudioContext) {
+      const ctx = new AudioContext();
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = "square";
+
+      osc.frequency.setValueAtTime(
+        880,
+        ctx.currentTime
+      );
+
+      gain.gain.setValueAtTime(
+        0.2,
+        ctx.currentTime
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        0.001,
+        ctx.currentTime + 0.3
+      );
 
       osc.connect(gain);
       gain.connect(ctx.destination);
-      osc.start();
-      osc.stop(ctx.currentTime+0.3);
-    }
-  }catch(e){}
 
-  try{
-    fallbackSound.currentTime=0;
-    fallbackSound.volume=1;
-    const p=fallbackSound.play();
-    if(p)p.catch(()=>{});
-  }catch(e){}
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    }
+
+  } catch (e) {}
+
+  try {
+    fallbackSound.currentTime = 0;
+    fallbackSound.volume = 1;
+
+    const p = fallbackSound.play();
+
+    if (p) {
+      p.catch(() => {});
+    }
+
+  } catch (e) {}
 }
 
-async function fetchData(){
-  try{
-    const istDate=getISTDate();
 
-    if(currentISTDate!==istDate){
-      currentISTDate=istDate;
+/* ============================================================
+   SUPABASE DATA FETCH
+   ============================================================ */
+
+async function fetchData() {
+  try {
+    const istDate = getISTDate();
+
+    if (currentISTDate !== istDate) {
+      currentISTDate = istDate;
+
       existingIDsSet.clear();
-      initialDataLoaded=false;
-      voiceQueue.length=0;
+
+      initialDataLoaded = false;
+
+      voiceQueue.length = 0;
     }
 
-    const startOfISTDay=new Date(`${istDate}T00:00:00+05:30`);
-    const startOfNextISTDay=new Date(startOfISTDay.getTime()+86400000);
+    const startOfISTDay =
+      new Date(`${istDate}T00:00:00+05:30`);
 
-    const{data,error}=await supabaseClient
+    const startOfNextISTDay =
+      new Date(
+        startOfISTDay.getTime() + 86400000
+      );
+
+    const {
+      data,
+      error
+    } = await supabaseClient
       .from("arrivals")
       .select(`
         s_id,
@@ -402,112 +861,238 @@ async function fetchData(){
         mode,
         arrival_time
       `)
-      .gte("arrival_time",startOfISTDay.toISOString())
-      .lt("arrival_time",startOfNextISTDay.toISOString())
-      .order("arrival_time",{ascending:false})
+      .gte(
+        "arrival_time",
+        startOfISTDay.toISOString()
+      )
+      .lt(
+        "arrival_time",
+        startOfNextISTDay.toISOString()
+      )
+      .order(
+        "arrival_time",
+        { ascending: false }
+      )
       .limit(350);
 
-    if(error)throw error;
+    if (error) {
+      throw error;
+    }
 
-    lastConnectionOK=true;
+    lastConnectionOK = true;
+
     updateLiveClock();
 
-    const dataRows=(data||[]).map(item=>[
-      item.s_id||"",
-      item.name||"Unknown Student",
-      item.class_section||"",
-      item.mode||"",
-      item.arrival_time||""
-    ]);
+    const dataRows =
+      (data || []).map(item => [
+        item.s_id || "",
+        item.name || "Unknown Student",
+        item.class_section || "",
+        item.mode || "",
+        item.arrival_time || ""
+      ]);
 
-    const newStudents=[];
+    const newStudents = [];
 
-    dataRows.forEach(row=>{
-      const id=String(row[0]||"").trim();
-      const name=String(row[1]||"").trim();
+    dataRows.forEach(row => {
+      const id =
+        String(row[0] || "").trim();
 
-      if(!id)return;
+      const name =
+        String(row[1] || "").trim();
 
-      if(!initialDataLoaded){
+      if (!id) {
+        return;
+      }
+
+      if (!initialDataLoaded) {
+
         existingIDsSet.add(id);
-      }else if(!existingIDsSet.has(id)){
+
+      } else if (!existingIDsSet.has(id)) {
+
         existingIDsSet.add(id);
-        if(name)newStudents.push(name);
+
+        if (name) {
+          newStudents.push(name);
+        }
       }
     });
 
-    initialDataLoaded=true;
+    initialDataLoaded = true;
 
-    if(newStudents.length){
+    if (newStudents.length) {
+
       playNotificationSound();
-      newStudents.reverse().forEach(name=>speakStudentName(name));
+
+      newStudents
+        .reverse()
+        .forEach(name => {
+          speakStudentName(name);
+        });
     }
 
-    rows=dataRows;
+    rows = dataRows;
+
     render();
 
-  }catch(err){
-    lastConnectionOK=false;
+  } catch (err) {
+
+    lastConnectionOK = false;
+
     updateLiveClock();
-    console.error("SUPABASE ERROR:",err);
+
+    console.error(
+      "SUPABASE ERROR:",
+      err
+    );
   }
 }
 
-function render(){
-  const search=document.getElementById("search");
-  const classFilter=document.getElementById("classFilter");
-  const container=document.getElementById("container");
 
-  if(!search||!classFilter||!container)return;
+/* ============================================================
+   RENDER
+   ============================================================ */
 
-  const q=search.value.toLowerCase().trim();
-  const selectedClass=classFilter.value;
+function render() {
+  const search =
+    document.getElementById("search");
 
-  const filtered=rows.filter(r=>{
-    const matchesSearch=(r||[]).join(" ").toLowerCase().includes(q);
-    const classSection=String(r[2]||"").trim();
+  const classFilter =
+    document.getElementById("classFilter");
 
-    const matchesClass=
-      selectedClass===""||
-      classSection===selectedClass||
-      classSection.startsWith(selectedClass+" - ");
+  const container =
+    document.getElementById("container");
 
-    return matchesSearch&&matchesClass;
-  });
+  if (
+    !search ||
+    !classFilter ||
+    !container
+  ) {
+    return;
+  }
 
-  let html='<div class="row headerRow">';
+  const q =
+    search.value
+      .toLowerCase()
+      .trim();
 
-  headers.forEach(h=>{
-    html+=`<div>${h||""}</div>`;
-  });
+  const selectedClass =
+    classFilter.value;
 
-  html+="</div>";
+  const filtered =
+    rows.filter(r => {
 
-  filtered.forEach((r,i)=>{
-    html+=`<div class="row cardRow ${i===0?"new":""}">`;
+      const matchesSearch =
+        (r || [])
+          .join(" ")
+          .toLowerCase()
+          .includes(q);
 
-    r.forEach((cell,idx)=>{
-      let value=cell;
-      if(idx===r.length-1)value=getOnlyTime(cell);
-      html+=`<div>${value||""}</div>`;
+      const classSection =
+        String(r[2] || "").trim();
+
+      const matchesClass =
+        selectedClass === "" ||
+        classSection === selectedClass ||
+        classSection.startsWith(
+          selectedClass + " - "
+        );
+
+      return (
+        matchesSearch &&
+        matchesClass
+      );
     });
 
-    html+="</div>";
+  let html =
+    '<div class="row headerRow">';
+
+  headers.forEach(h => {
+    html += `<div>${h || ""}</div>`;
   });
 
-  container.innerHTML=html;
+  html += "</div>";
+
+  filtered.forEach((r, i) => {
+
+    html +=
+      `<div class="row cardRow ${i === 0 ? "new" : ""}">`;
+
+    r.forEach((cell, idx) => {
+
+      let value = cell;
+
+      if (idx === r.length - 1) {
+        value = getOnlyTime(cell);
+      }
+
+      html +=
+        `<div>${value || ""}</div>`;
+    });
+
+    html += "</div>";
+  });
+
+  container.innerHTML = html;
 }
+
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
 
 updateLiveClock();
-setInterval(updateLiveClock,1000);
-fetchData();
-setInterval(fetchData,2000);
 
-if("speechSynthesis" in window){
-  window.speechSynthesis.onvoiceschanged=()=>{
-    window.speechSynthesis.getVoices();
-  };
+setInterval(
+  updateLiveClock,
+  1000
+);
+
+fetchData();
+
+setInterval(
+  fetchData,
+  2000
+);
+
+
+/* ============================================================
+   SPEECH VOICE INITIALIZATION
+   ============================================================ */
+
+if ("speechSynthesis" in window) {
+
+  window.speechSynthesis.onvoiceschanged =
+    () => {
+      window.speechSynthesis.getVoices();
+    };
 }
+
+
+/* ============================================================
+   WAKE LOCK RE-ACQUISITION
+   ============================================================ */
+
+document.addEventListener(
+  "visibilitychange",
+  () => {
+
+    if (
+      document.visibilityState === "visible"
+    ) {
+      reacquireWakeLock();
+    }
+  }
+);
+
+window.addEventListener(
+  "focus",
+  () => {
+    reacquireWakeLock();
+  }
+);
+
 </script>
 
 </body>
